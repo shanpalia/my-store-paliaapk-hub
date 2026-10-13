@@ -32,9 +32,20 @@ $('selectCompany').addEventListener('click',renderCompanyPicker);
 function openWorkspace(c){
  state.company=c;loadData();if(c&&c.id)history.replaceState(null,'',location.pathname+'?companyId='+encodeURIComponent(c.id));document.querySelectorAll('[data-menu-link]').forEach(a=>{const target=a.dataset.menuLink;a.href=target+(target.includes('?')?'&':'?')+'companyId='+encodeURIComponent(c.id)});$('startup').classList.add('hidden');$('workspace').classList.remove('hidden');
  $('activeCompany').textContent=c.name;$('footerCompany').textContent=c.name+' · My Store By PaliaAPK HUB';
+ const profileImage=$('profileCompanyImage');if(profileImage){profileImage.src=c.logo||'';profileImage.alt=(c.name||'Company')+' image';profileImage.style.display=c.logo?'block':'none';}
+ if($('profileCompanyName'))$('profileCompanyName').textContent=c.name||'Company';
+ if($('profileCompanyType'))$('profileCompanyType').textContent=c.businessType||'Company profile';
+ if($('profileCompanyOwner'))$('profileCompanyOwner').textContent=c.owner||'';
  renderAll();switchView('dashboard');
 }
 $('switchCompany').addEventListener('click',renderCompanyPicker);
+function closeProfileMenu(){const menu=$('profileMenu'),trigger=$('profileTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
+$('profileTrigger').addEventListener('click',e=>{e.stopPropagation();const menu=$('profileMenu'),open=menu.classList.toggle('hidden')===false;$('profileTrigger').setAttribute('aria-expanded',String(open))});
+document.addEventListener('click',e=>{if(!e.target.closest('.profile-wrap'))closeProfileMenu()});
+$('profileEditShop').addEventListener('click',()=>{if(state.company)location.href='company-edit.html?companyId='+encodeURIComponent(state.company.id)});
+$('profileSwitchCompany').addEventListener('click',()=>{closeProfileMenu();renderCompanyPicker()});
+$('profileUploadImage').addEventListener('click',()=>{if(state.company)location.href='company-edit.html?companyId='+encodeURIComponent(state.company.id)+'#logoFile'});
+
 $('exitWorkspace').addEventListener('click',()=>{state.company=null;$('workspace').classList.add('hidden');$('startup').classList.remove('hidden');window.scrollTo(0,0)});
 $('brandHome').addEventListener('click',e=>{e.preventDefault();switchView('dashboard')});
 function getItem(id){return state.items.find(i=>i.id===id)}
@@ -44,15 +55,15 @@ function itemRow(i,actions=true){return '<tr><td><div class="item-name">'+esc(i.
 function emptyTable(title,desc,button=true){return '<div class="empty"><div class="empty-icon">▤</div><strong>'+title+'</strong>'+desc+(button?'<div style="margin-top:15px"><button class="primary-btn" data-empty-add>＋ Create Stock Item</button></div>':'')+'</div>'}
 function tableHTML(items,actions=true){if(!items.length)return emptyTable('No stock items yet','Create your first item to start tracking real inventory.');return '<div class="table-wrap"><table><thead><tr><th>Item / SKU</th><th>Category</th><th>Unit</th><th>Balance Qty</th><th>Purchase Rate</th><th>Sale Rate</th><th>Stock Value</th><th>Status</th>'+(actions?'<th>Actions</th>':'')+'</tr></thead><tbody>'+items.map(i=>itemRow(i,actions)).join('')+'</tbody></table></div>'}
 function renderShopDetails(){
- const c=state.company||{},target=$('dashboardShopDetails'),edit=$('editShopDetails');
- if(edit)edit.href='company-edit.html?companyId='+encodeURIComponent(c.id||'');
+ const c=state.company||{},target=$('dashboardShopDetails');
  if(!target)return;
  const val=x=>String(x||'').trim();
  const address=[c.address,c.city,c.state,c.pincode,c.country].map(val).filter(Boolean).join(', ');
  const detail=(label,value)=>value?'<div><span class="shop-detail-label">'+esc(label)+'</span><div class="shop-detail-value">'+esc(value)+'</div></div>':'';
- if(!c.name&&!c.phone&&!c.address&&!c.logo){target.innerHTML='<div class="shop-profile-empty">Shop details abhi add nahi ki gayi hain. <a href="'+esc(edit?edit.href:'company-edit.html')+'">Edit Shop Details</a> par click karke apni company ki jaankari save karein.</div>';return;}
- target.innerHTML=(c.logo?'<img class="shop-profile-logo" src="'+esc(c.logo)+'" alt="Shop logo">':'')+'<div class="shop-profile-info"><div class="shop-name">'+esc(c.name||'My Store')+'</div>'+detail('Business Type',val(c.businessType))+detail('Owner / Contact Person',val(c.owner))+detail('Mobile / WhatsApp',val(c.phone))+detail('Email',val(c.email))+detail('Address',address)+detail('GSTIN',val(c.gstin))+detail('PAN',val(c.pan))+'</div>';
+ if(!c.name&&!address&&!c.logo){target.innerHTML='<div class="shop-profile-empty">Shop details abhi add nahi ki gayi hain. Company menu se Edit Shop Details par click karke details save karein.</div>';return;}
+ target.innerHTML=(c.logo?'<img class="shop-profile-logo" src="'+esc(c.logo)+'" alt="Company image">':'<div class="shop-profile-logo" aria-label="Company image not uploaded" style="display:grid;place-items:center;color:#8a968d;font-size:24px">▧</div>')+'<div class="shop-profile-info"><div class="shop-name">'+esc(c.name||'My Store')+'</div><div><span class="badge">'+esc(val(c.businessType)||'Company')+'</span></div>'+detail('Address',address)+'</div>';
 }
+
 function renderDashboard(){
  renderShopDetails();
  const qty=state.items.reduce((s,i)=>s+num(i.qty),0),value=state.items.reduce((s,i)=>s+num(i.qty)*num(i.purchaseRate),0),low=state.items.filter(i=>itemStatus(i)!=='ok').length;

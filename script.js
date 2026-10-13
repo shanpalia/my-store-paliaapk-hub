@@ -93,7 +93,8 @@ function openVoucher(type='IN',itemId=''){
  openModal('voucherModal');
 }
 ['stockInQuick','quickIn','stockInPage'].forEach(id=>$(id).addEventListener('click',()=>openVoucher('IN')));
-['stockOutQuick','quickOut','stockOutPage','saleAdd'].forEach(id=>$(id).addEventListener('click',()=>openVoucher('OUT')));\n$('purchaseAdd').addEventListener('click',()=>openVoucher('IN'));$('balanceExport').addEventListener('click',exportItems);
+['stockOutQuick','quickOut','stockOutPage','saleAdd'].forEach(id=>$(id).addEventListener('click',()=>openVoucher('OUT')));
+$('purchaseAdd').addEventListener('click',()=>openVoucher('IN'));$('balanceExport').addEventListener('click',exportItems);
 $('voucherType').addEventListener('change',()=>{const i=getItem($('voucherItem').value);$('voucherTitle').textContent=$('voucherType').value==='IN'?'Stock In / Purchase':'Stock Out / Issue';if(i)$('voucherRate').value=$('voucherType').value==='IN'?i.purchaseRate:i.saleRate});
 $('voucherItem').addEventListener('change',()=>{const i=getItem($('voucherItem').value);if(i)$('voucherRate').value=$('voucherType').value==='IN'?i.purchaseRate:i.saleRate});
 $('voucherForm').addEventListener('submit',e=>{

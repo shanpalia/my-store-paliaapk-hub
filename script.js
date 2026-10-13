@@ -120,9 +120,35 @@ function csvCell(v){const s=String(v??'');return '"'+s.replace(/"/g,'""')+'"'}
 function downloadCSV(filename,rows){const csv='\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);showToast('CSV export started.')}
 function exportItems(){downloadCSV('inventory-items-'+today()+'.csv',[['Item Name','SKU','Category','Unit','Quantity','Reorder Level','Purchase Rate','Sale Rate','Stock Value','Status'],...state.items.map(i=>[i.name,i.sku,i.category,i.unit,i.qty,i.minQty,i.purchaseRate,i.saleRate,num(i.qty)*num(i.purchaseRate),itemStatus(i)])])}
 ['exportCsv','itemsExport','reportsExport'].forEach(id=>$(id).addEventListener('click',exportItems));
+function setupWorkspaceTools(){
+ const calc=$('calculatorModal'),backup=$('backupModal'),exit=$('exitConfirmModal');
+ $('openCalculator').addEventListener('click',()=>{openModal('calculatorModal');$('calcDisplay').focus()});
+ $('backupData').addEventListener('click',()=>{ $('backupMessage').textContent='';$('restoreFile').value='';openModal('backupModal') });
+ $('exitWorkspaceMenu').addEventListener('click',()=>openModal('exitConfirmModal'));
+ $('confirmExit').addEventListener('click',()=>{location.href='company.html'});
+ $('calcKeys').addEventListener('click',e=>{
+  const b=e.target.closest('[data-calc]');if(!b)return;const k=b.dataset.calc,d=$('calcDisplay');
+  if(k==='C'){d.value='0';return}
+  if(k==='='){try{const expression=d.value.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');if(!/^[0-9+*/(). \-]+$/.test(expression))throw new Error('invalid');const tokens=expression.match(/(?:\d+\.?\d*|\.\d+|[()+*/-])/g)||[];if(tokens.join('')!==expression.replace(/\s/g,''))throw new Error('invalid');const values=[];const ops=[];const prec={'+':1,'-':1,'*':2,'/':2};const apply=()=>{const op=ops.pop(),b=values.pop(),a=values.pop();if(a===undefined||b===undefined)throw new Error('invalid');if(op==='+')values.push(a+b);else if(op==='-')values.push(a-b);else if(op==='*')values.push(a*b);else if(op==='/')values.push(a/b)};let expect=true;for(const t of tokens){if(/^\d|^\./.test(t)){if(!expect)throw new Error('invalid');values.push(Number(t));expect=false}else if(t==='('){if(!expect)throw new Error('invalid');ops.push(t)}else if(t===')'){while(ops.length&&ops[ops.length-1]!=='(')apply();if(ops.pop()!=='(')throw new Error('invalid');expect=false}else{if(expect&&t==='-'){values.push(0)}else if(expect)throw new Error('invalid');while(ops.length&&ops[ops.length-1]!=='('&&prec[ops[ops.length-1]]>=prec[t])apply();ops.push(t);expect=true}}if(expect)throw new Error('invalid');while(ops.length){if(ops[ops.length-1]==='(')throw new Error('invalid');apply()}if(values.length!==1||!Number.isFinite(values[0]))throw new Error('invalid');d.value=String(Number(values[0].toFixed(8)))}catch(err){d.value='Error'}return}
+  if(d.value==='0'||d.value==='Error')d.value=k;else d.value+=({'÷':'÷','×':'×','−':'−'}[k]||k);
+ });
+ $('downloadBackup').addEventListener('click',()=>{
+  if(!state.company){$('backupMessage').textContent='Select a company first.';return}
+  const data={format:'my-store-palia-backup-v1',exportedAt:new Date().toISOString(),company:state.company,inventory:JSON.parse(localStorage.getItem(companyDataKey(state.company.id))||'{}'),paymentReceipts:JSON.parse(localStorage.getItem('myStorePaymentReceiptsV1_'+state.company.id)||'[]')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my-store-backup-'+String(state.company.name||'company').replace(/[^a-z0-9_-]+/gi,'-')+'-'+today()+'.json';a.click();URL.revokeObjectURL(url);$('backupMessage').textContent='Backup download started.';
+ });
+ $('chooseRestore').addEventListener('click',()=>$('restoreFile').click());
+ $('restoreFile').addEventListener('change',async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{const data=JSON.parse(await file.text());if(!state.company)throw new Error('Select a company first.');if(data.format!=='my-store-palia-backup-v1'||!data.inventory||!Array.isArray(data.inventory.items)||!Array.isArray(data.inventory.vouchers)||!Array.isArray(data.paymentReceipts))throw new Error('This file is not a valid My Store backup.');if(String(data.company&&data.company.id)!==String(state.company.id))throw new Error('This backup belongs to a different company. Open that company before restoring.');if(!confirm('Restore backup for '+state.company.name+'? Current inventory, vouchers and receipts for this company will be replaced.')){e.target.value='';return}localStorage.setItem(companyDataKey(state.company.id),JSON.stringify({items:data.inventory.items,vouchers:data.inventory.vouchers}));localStorage.setItem('myStorePaymentReceiptsV1_'+state.company.id,JSON.stringify(data.paymentReceipts));loadData();renderAll();$('backupMessage').textContent='Backup restored successfully.';showToast('Backup restored.')}
+  catch(err){$('backupMessage').textContent=err.message||'Could not restore this backup.'}
+  e.target.value='';
+ });
+}
 function init(){
  const id=new URLSearchParams(location.search).get('companyId');const cs=getCompanies();const c=id?cs.find(x=>String(x.id)===id):null;
  if(c)openWorkspace(c);else{$('startup').classList.remove('hidden');$('workspace').classList.add('hidden')}
 }
+setupWorkspaceTools();
 init();
 })();

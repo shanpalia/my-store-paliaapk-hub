@@ -41,9 +41,50 @@ const itemOptions=data.items.map(i=>'<option value="'+esc(i.id)+'">'+esc(i.name)
 const suggested='PUR-'+String(data.vouchers.filter(v=>v.type==='IN').length+1).padStart(5,'0');
 $('purchaseFormPanel').innerHTML='<div class="panel"><div class="panel-head"><div><h2>'+(editVoucher?'Edit Purchase Voucher':'New Purchase Voucher')+'</h2><p>'+(editVoucher?'Purchase details badlein aur Save Changes karein.':'Supplier invoice details and one or more stock item lines.')+'</p></div><button class="btn" type="button" id="closePurchaseForm">Close</button></div><form id="purchaseForm"><div class="purchase-grid"><div class="field"><label for="purchaseDate">Date *</label><input id="purchaseDate" name="date" type="date" required value="'+esc(editVoucher?.date||today())+'"></div><div class="field"><label for="purchaseNo">Voucher / Invoice No. *</label><input id="purchaseNo" name="voucherNo" required maxlength="50" value="'+esc(editVoucher?.voucherNo||suggested)+'"></div><div class="field field-with-add"><div><label for="purchaseParty">Supplier / Party</label><input id="purchaseParty" name="party" list="supplierOptions" maxlength="120" placeholder="Type or select supplier" value="'+esc(editVoucher?.party||'')+'"><datalist id="supplierOptions">'+accountOptions+'</datalist></div><button class="plus-btn" type="button" id="quickAddAccount" title="Add account" aria-label="Add account">+</button></div><div class="field"><label for="purchaseNote">Narration</label><input id="purchaseNote" name="note" maxlength="250" placeholder="Invoice note / details" value="'+esc(editVoucher?.note||'')+'"></div></div><div class="purchase-lines" style="margin-top:18px"><table><thead><tr><th style="width:32%">Item * <span class="muted">(+ to add)</span></th><th>Available Qty</th><th style="width:14%">Quantity *</th><th style="width:17%">Rate (₹) Auto</th><th style="width:19%">Amount (₹) *</th><th></th></tr></thead><tbody id="purchaseLineRows"></tbody></table></div><div class="action-row" style="margin-top:12px"><button class="btn" type="button" id="addPurchaseLine">＋ Add Item Row</button></div><div class="purchase-summary"><span>Total Purchase</span><strong id="purchaseGrandTotal">₹0.00</strong></div><div class="error" id="purchaseError" role="alert"></div><div class="action-row"><button class="btn" type="button" id="cancelPurchase">Cancel</button><button class="btn primary" type="submit">'+(editVoucher?'Save Changes':'Save Purchase')+'</button></div></form></div>';
 const form=$('purchaseForm'),body=$('purchaseLineRows');
-function addLine(itemId='',qty='',rate=''){const initialAmount=(num(qty)*num(rate)).toFixed(2);const tr=document.createElement('tr');tr.innerHTML='<td><div class="field-with-add"><div><select class="line-item" required><option value="">Select item</option>'+itemOptions+'</select></div><button type="button" class="plus-btn quick-add-item" title="Add item" aria-label="Add item">+</button></div></td><td class="line-stock">—</td><td><input class="line-qty" type="number" min="0.001" step="any" required value="'+qty+'" placeholder="Qty"></td><td><input class="line-rate" type="number" min="0" step="0.01" value="'+rate+'" placeholder="Auto" readonly aria-label="Calculated rate"></td><td><input class="line-amount-input" type="number" min="0" step="0.01" required value="'+initialAmount+'" placeholder="Enter amount"></td><td><button type="button" class="btn line-remove" aria-label="Remove row">×</button></td>';body.appendChild(tr);const sel=tr.querySelector('.line-item'),q=tr.querySelector('.line-qty'),r=tr.querySelector('.line-rate'),amt=tr.querySelector('.line-amount-input');amt.dataset.manual='no';amt.dataset.baseRate=String(num(rate));if(itemId)sel.value=itemId;
-function update(){const item=data.items.find(i=>i.id===sel.value);tr.querySelector('.line-stock').textContent=item?num(item.qty)+' '+(item.unit||'pcs'):'—';const quantity=num(q.value);if(amt.dataset.manual!=='yes'&&quantity>0){const baseRate=num(amt.dataset.baseRate)||num(item?.purchaseRate)||num(rate);amt.value=(quantity*baseRate).toFixed(2)}const amount=num(amt.value);r.value=quantity>0?(amount/quantity).toFixed(2):'0.00';let total=0;body.querySelectorAll('tr').forEach(row=>total+=num(row.querySelector('.line-amount-input').value));$('purchaseGrandTotal').textContent=money(total)}
-sel.addEventListener('change',()=>{const item=data.items.find(i=>i.id===sel.value);if(item){const rate=num(item.purchaseRate);amt.dataset.baseRate=String(rate);amt.dataset.manual='no';amt.value=(num(q.value)*rate).toFixed(2)}update()});q.addEventListener('input',update);amt.addEventListener('input',()=>{amt.dataset.manual='yes';update()});tr.querySelector('.line-remove').onclick=()=>{if(body.children.length===1){sel.value='';q.value='';r.value='0.00';amt.value='0.00';update()}else{tr.remove();update()}};update()}
+function addLine(itemId='',qty='',rate=''){
+const initialAmount=(num(qty)*num(rate)).toFixed(2);
+const tr=document.createElement('tr');
+tr.innerHTML='<td><div class="field-with-add"><div><select class="line-item" required><option value="">Select item</option>'+itemOptions+'</select></div><button type="button" class="plus-btn quick-add-item" title="Add item" aria-label="Add item">+</button></div></td><td class="line-stock">—</td><td><input class="line-qty" type="number" min="0.001" step="any" required value="'+qty+'" placeholder="Qty"></td><td><input class="line-rate" type="number" min="0" step="0.01" required value="'+rate+'" placeholder="Enter rate" aria-label="Rate"></td><td><input class="line-amount-input" type="number" min="0" step="0.01" required value="'+initialAmount+'" placeholder="Enter amount"></td><td><button type="button" class="btn line-remove" aria-label="Remove row">×</button></td>';
+body.appendChild(tr);
+const sel=tr.querySelector('.line-item'),q=tr.querySelector('.line-qty'),r=tr.querySelector('.line-rate'),amt=tr.querySelector('.line-amount-input');
+amt.dataset.manual='no';
+if(itemId)sel.value=itemId;
+function updateTotals(){
+const item=data.items.find(i=>i.id===sel.value);
+tr.querySelector('.line-stock').textContent=item?num(item.qty)+' '+(item.unit||'pcs'):'—';
+const quantity=num(q.value),amount=num(amt.value);
+r.value=quantity>0?(amount/quantity).toFixed(2):'0.00';
+let total=0;
+body.querySelectorAll('tr').forEach(row=>total+=num(row.querySelector('.line-amount-input').value));
+$('purchaseGrandTotal').textContent=money(total);
+}
+function applyRateToAmount(){
+const quantity=num(q.value),currentRate=num(r.value);
+amt.dataset.manual='no';
+amt.value=(quantity*currentRate).toFixed(2);
+updateTotals();
+}
+function applyAmountToRate(){
+amt.dataset.manual='yes';
+updateTotals();
+}
+sel.addEventListener('change',()=>{
+const item=data.items.find(i=>i.id===sel.value);
+if(item){r.value=num(item.purchaseRate).toFixed(2);applyRateToAmount()}else{r.value='0.00';amt.value='0.00';amt.dataset.manual='no';updateTotals()}
+});
+q.addEventListener('input',()=>{
+if(amt.dataset.manual!=='yes'){amt.value=(num(q.value)*num(r.value)).toFixed(2)}
+updateTotals();
+});
+r.addEventListener('input',applyRateToAmount);
+amt.addEventListener('input',applyAmountToRate);
+tr.querySelector('.line-remove').onclick=()=>{
+if(body.children.length===1){sel.value='';q.value='';r.value='0.00';amt.value='0.00';amt.dataset.manual='no';updateTotals()}
+else{tr.remove();updateTotals()}
+};
+if(itemId&&data.items.find(i=>i.id===itemId)){r.value=num(rate||data.items.find(i=>i.id===itemId).purchaseRate).toFixed(2)}
+updateTotals();
+}
 if(editVoucher){addLine(editVoucher.itemId,editVoucher.qty,editVoucher.rate)}else{addLine()}$('addPurchaseLine').onclick=()=>addLine();$('quickAddAccount').onclick=quickAddAccount;$('purchaseLineRows').addEventListener('click',e=>{if(e.target.closest('.quick-add-item'))quickAddItem(e.target.closest('tr'))});$('closePurchaseForm').onclick=()=>{$('purchaseFormPanel').innerHTML=''};$('cancelPurchase').onclick=()=>{$('purchaseFormPanel').innerHTML=''};
 form.onsubmit=e=>{e.preventDefault();$('purchaseError').textContent='';const lines=[...body.querySelectorAll('tr')].map(tr=>({item:data.items.find(i=>i.id===tr.querySelector('.line-item').value),qty:num(tr.querySelector('.line-qty').value),amount:num(tr.querySelector('.line-amount-input').value),rate:num(tr.querySelector('.line-rate').value)}));if(!lines.length||lines.some(l=>!l.item||l.qty<=0||l.amount<0||!Number.isFinite(l.amount))){$('purchaseError').textContent='Har row mein item, valid quantity aur amount bharein.';return}
 const voucherNo=form.elements.voucherNo.value.trim();if(data.vouchers.some(v=>v.type==='IN'&&String(v.id)!==String(editVoucher?.id)&&String(v.voucherNo).toLowerCase()===voucherNo.toLowerCase())){$('purchaseError').textContent='Yeh purchase voucher number pehle se maujood hai. Unique number enter karein.';form.elements.voucherNo.focus();return}

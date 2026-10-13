@@ -22,6 +22,7 @@
 <form id="companyForm">
 <div class="grid">
 <div class="field full"><label for="name">Company / Store Name *</label><input id="name" name="name" required maxlength="100"></div>
+<div class="field full"><label for="logoFile">Company Logo (optional)</label><input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp"><div style="display:flex;align-items:center;gap:12px;margin-top:8px"><img id="logoPreview" alt="Company logo preview" style="display:none;width:76px;height:76px;object-fit:contain;border:1px solid #dce7df;border-radius:8px;padding:5px;background:#fff"><button type="button" id="removeLogo" class="btn secondary" style="min-height:34px;padding:7px 10px">Remove Logo</button></div><small style="display:block;color:#65756b;margin-top:6px">PNG, JPG or WebP · maximum 300 KB. The logo appears on printed invoices.</small></div>
 <div><label for="businessType">Business Type</label><input id="businessType" name="businessType" maxlength="80"></div>
 <div><label for="owner">Owner / Contact Person</label><input id="owner" name="owner" maxlength="100"></div>
 <div><label for="phone">Mobile / WhatsApp</label><input id="phone" name="phone" maxlength="30" inputmode="tel"></div>
@@ -46,6 +47,10 @@ var KEY='myStorePaliaCompaniesV1';
 var fields=['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'];
 var selectedId=null;
 var allCompanies=[];
+var pendingLogo=null;
+function showLogo(value){var img=byId('logoPreview');if(value){img.src=value;img.style.display='block';}else{img.removeAttribute('src');img.style.display='none';}}
+byId('logoFile').addEventListener('change',function(){var file=this.files&&this.files[0];if(!file){pendingLogo=null;return;}if(!/^image\\/(png|jpeg|webp)$/.test(file.type)){this.value='';setStatus('Please choose a PNG, JPG or WebP image.');return;}if(file.size>300*1024){this.value='';setStatus('Logo must be 300 KB or smaller.');return;}var reader=new FileReader();reader.onload=function(){pendingLogo=String(reader.result||'');showLogo(pendingLogo);setStatus('Logo selected. Save Company Details to keep it.');};reader.onerror=function(){setStatus('Could not read the logo file. Please try another image.');};reader.readAsDataURL(file);});
+byId('removeLogo').addEventListener('click',function(){pendingLogo='';byId('logoFile').value='';showLogo('');setStatus('Logo will be removed after saving.');});
 function byId(id){return document.getElementById(id);}
 function setStatus(text){byId('status').textContent=text||'';}
 function readCompanies(){
@@ -91,6 +96,7 @@ function showPicker(){
 function loadCompany(company){
  if(!company){showPicker();return;}
  selectedId=companyId(company);
+ pendingLogo=company.logo||null;byId('logoFile').value='';showLogo(pendingLogo);
  fields.forEach(function(field){var input=byId(field);if(input)input.value=company[field]===undefined||company[field]===null?'':String(company[field]);});
  byId('pageTitle').textContent='Edit Company Details';
  byId('intro').textContent='Update your company profile. Your company ID, stock items and voucher history will remain unchanged.';
@@ -124,6 +130,7 @@ byId('companyForm').addEventListener('submit',function(event){
  fields.forEach(function(field){if(field==='name')updated[field]=name;else updated[field]=byId(field).value.trim();});
  updated.gstin=String(updated.gstin||'').toUpperCase();
  updated.pan=String(updated.pan||'').toUpperCase();
+ if(pendingLogo!==null)updated.logo=pendingLogo;
  updated.updatedAt=new Date().toISOString();
  allCompanies[index]=updated;
  try{

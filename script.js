@@ -43,7 +43,18 @@ function statusBadge(i){const s=itemStatus(i);return s==='out'?'<span class="bad
 function itemRow(i,actions=true){return '<tr><td><div class="item-name">'+esc(i.name)+'</div><div class="item-sub">'+esc(i.sku||'No item code')+'</div></td><td>'+esc(i.category||'Other')+'</td><td>'+esc(i.unit||'pcs')+'</td><td class="qty">'+num(i.qty).toLocaleString('en-IN',{maximumFractionDigits:3})+'</td><td>'+money(i.purchaseRate)+'</td><td>'+money(i.saleRate)+'</td><td>'+money(num(i.qty)*num(i.purchaseRate))+'</td><td>'+statusBadge(i)+'</td>'+(actions?'<td><button class="outline-btn" data-edit="'+esc(i.id)+'">Edit</button> <button class="outline-btn" data-voucher-in="'+esc(i.id)+'">＋</button> <button class="outline-btn" data-voucher-out="'+esc(i.id)+'">−</button></td>':'')+'</tr>'}
 function emptyTable(title,desc,button=true){return '<div class="empty"><div class="empty-icon">▤</div><strong>'+title+'</strong>'+desc+(button?'<div style="margin-top:15px"><button class="primary-btn" data-empty-add>＋ Create Stock Item</button></div>':'')+'</div>'}
 function tableHTML(items,actions=true){if(!items.length)return emptyTable('No stock items yet','Create your first item to start tracking real inventory.');return '<div class="table-wrap"><table><thead><tr><th>Item / SKU</th><th>Category</th><th>Unit</th><th>Balance Qty</th><th>Purchase Rate</th><th>Sale Rate</th><th>Stock Value</th><th>Status</th>'+(actions?'<th>Actions</th>':'')+'</tr></thead><tbody>'+items.map(i=>itemRow(i,actions)).join('')+'</tbody></table></div>'}
+function renderShopDetails(){
+ const c=state.company||{},target=$('dashboardShopDetails'),edit=$('editShopDetails');
+ if(edit)edit.href='company-edit.html?companyId='+encodeURIComponent(c.id||'');
+ if(!target)return;
+ const val=x=>String(x||'').trim();
+ const address=[c.address,c.city,c.state,c.pincode,c.country].map(val).filter(Boolean).join(', ');
+ const detail=(label,value)=>value?'<div><span class="shop-detail-label">'+esc(label)+'</span><div class="shop-detail-value">'+esc(value)+'</div></div>':'';
+ if(!c.name&&!c.phone&&!c.address&&!c.logo){target.innerHTML='<div class="shop-profile-empty">Shop details abhi add nahi ki gayi hain. <a href="'+esc(edit?edit.href:'company-edit.html')+'">Edit Shop Details</a> par click karke apni company ki jaankari save karein.</div>';return;}
+ target.innerHTML=(c.logo?'<img class="shop-profile-logo" src="'+esc(c.logo)+'" alt="Shop logo">':'')+'<div class="shop-profile-info"><div class="shop-name">'+esc(c.name||'My Store')+'</div>'+detail('Business Type',val(c.businessType))+detail('Owner / Contact Person',val(c.owner))+detail('Mobile / WhatsApp',val(c.phone))+detail('Email',val(c.email))+detail('Address',address)+detail('GSTIN',val(c.gstin))+detail('PAN',val(c.pan))+'</div>';
+}
 function renderDashboard(){
+ renderShopDetails();
  const qty=state.items.reduce((s,i)=>s+num(i.qty),0),value=state.items.reduce((s,i)=>s+num(i.qty)*num(i.purchaseRate),0),low=state.items.filter(i=>itemStatus(i)!=='ok').length;
  $('statItems').textContent=state.items.length.toLocaleString('en-IN');$('statQty').textContent=qty.toLocaleString('en-IN',{maximumFractionDigits:3});$('statValue').textContent=money(value);$('statLow').textContent=low;
  $('dashboardTable').innerHTML=tableHTML([...state.items].sort((a,b)=>a.name.localeCompare(b.name)).slice(0,8),true);

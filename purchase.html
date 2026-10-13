@@ -53,7 +53,7 @@ function updateTotals(){
 const item=data.items.find(i=>i.id===sel.value);
 tr.querySelector('.line-stock').textContent=item?num(item.qty)+' '+(item.unit||'pcs'):'—';
 const quantity=num(q.value),amount=num(amt.value);
-r.value=quantity>0?(amount/quantity).toFixed(2):'0.00';
+if(amt.dataset.manual==='yes'){r.value=quantity>0?(amount/quantity).toFixed(2):'0.00'}else if(quantity>0){r.value=(amount/quantity).toFixed(2)}
 let total=0;
 body.querySelectorAll('tr').forEach(row=>total+=num(row.querySelector('.line-amount-input').value));
 $('purchaseGrandTotal').textContent=money(total);

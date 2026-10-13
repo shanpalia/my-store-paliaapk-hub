@@ -10,5 +10,50 @@
 <div><label for="gstin">GSTIN</label><input id="gstin" maxlength="15" autocapitalize="characters"></div><div><label for="pan">PAN</label><input id="pan" maxlength="10" autocapitalize="characters"></div>
 </div><div class="note">Company data is stored in this browser only. Editing the company profile does not change its ID or delete inventory/voucher history.</div><div class="msg" id="msg" role="status"></div><div class="actions"><a class="btn" id="cancel" href="index.html">Cancel</a><button class="btn primary" type="submit">Save Company Details</button></div></form></main>
 <script>
-(()=>{'use strict';const KEY='myStorePaliaCompaniesV1';const $=id=>document.getElementById(id);let id=new URLSearchParams(location.search).get('companyId');let all=[];try{all=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(all))all=[]}catch{all=[]}let c=id?all.find(x=>String(x.id)===String(id)):null;if(!c&&all.length===1){c=all[0];id=String(c.id)}if(!c){const form=document.querySelector('form');form.innerHTML='<h2>No company selected</h2><p class="sub">Please open a company from the company selection page, then click Company on the dashboard.</p><a class="btn primary" href="company.html">Select Company</a>';document.getElementById('backLink').href='company.html';document.querySelector('h1').textContent='Select a Company';return}['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'].forEach(k=>{if($(k))$(k).value=c[k]||''});$('backLink').href='index.html?companyId='+encodeURIComponent(c.id);$('cancel').href=$('backLink').href;$('form').addEventListener('submit',e=>{e.preventDefault();const name=$('name').value.trim();if(!name){$('msg').textContent='Company name is required.';$('name').focus();return}const email=$('email').value.trim();if(email&&!$('email').checkValidity()){$('msg').textContent='Enter a valid email address or leave it blank.';return}const idx=all.findIndex(x=>String(x.id)===String(id));all[idx]={...all[idx],name,businessType:$('businessType').value.trim(),owner:$('owner').value.trim(),phone:$('phone').value.trim(),email,address:$('address').value.trim(),city:$('city').value.trim(),state:$('state').value.trim(),pincode:$('pincode').value.trim(),country:$('country').value.trim(),gstin:$('gstin').value.trim().toUpperCase(),pan:$('pan').value.trim().toUpperCase(),updatedAt:new Date().toISOString()};try{localStorage.setItem(KEY,JSON.stringify(all));location.href='index.html?companyId='+encodeURIComponent(id)}catch(err){$('msg').textContent='Could not save changes. Browser storage may be unavailable.'}})})();
+(function(){
+  'use strict';
+  var KEY='myStorePaliaCompaniesV1';
+  var $=function(id){return document.getElementById(id);};
+  function showError(message){
+    var form=$('form');
+    if(form){form.innerHTML='<h2>Company page could not load</h2><p class="sub"></p><a class="btn primary" href="company.html">Open Company Selection</a>';form.querySelector('.sub').textContent=message;}
+  }
+  try {
+    var id=new URLSearchParams(window.location.search).get('companyId');
+    var all=[];
+    try { all=JSON.parse(window.localStorage.getItem(KEY)||'[]'); } catch(e) { all=[]; }
+    if(!Array.isArray(all)) all=[];
+    var company=id?all.find(function(item){return String(item.id)===String(id);}):null;
+    if(!company && all.length===1){company=all[0];id=String(company.id);}
+    if(!company){
+      $('form').innerHTML='<h2>No company selected</h2><p class="sub">Open your company from the company selection page first. If the company was saved in another browser or device, it will not appear here.</p><a class="btn primary" href="company.html">Select Company</a>';
+      $('backLink').href='company.html';
+      document.querySelector('h1').textContent='Select a Company';
+      return;
+    }
+    ['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'].forEach(function(key){if($(key)) $(key).value=company[key]||'';});
+    $('backLink').href='index.html?companyId='+encodeURIComponent(company.id);
+    $('cancel').href=$('backLink').href;
+    $('form').addEventListener('submit',function(event){
+      event.preventDefault();
+      var name=$('name').value.trim();
+      if(!name){$('msg').textContent='Company name is required.';$('name').focus();return;}
+      var email=$('email').value.trim();
+      if(email && !$('email').checkValidity()){$('msg').textContent='Enter a valid email address or leave it blank.';return;}
+      var index=all.findIndex(function(item){return String(item.id)===String(id);});
+      if(index<0){$('msg').textContent='Company record not found. Please select the company again.';return;}
+      all[index]=Object.assign({},all[index],{
+        name:name,businessType:$('businessType').value.trim(),owner:$('owner').value.trim(),
+        phone:$('phone').value.trim(),email:email,address:$('address').value.trim(),
+        city:$('city').value.trim(),state:$('state').value.trim(),pincode:$('pincode').value.trim(),
+        country:$('country').value.trim(),gstin:$('gstin').value.trim().toUpperCase(),
+        pan:$('pan').value.trim().toUpperCase(),updatedAt:new Date().toISOString()
+      });
+      try { window.localStorage.setItem(KEY,JSON.stringify(all));window.location.href='index.html?companyId='+encodeURIComponent(id); }
+      catch(error){$('msg').textContent='Could not save changes. Please check browser storage settings.';}
+    });
+  } catch(error) {
+    showError('Please return to the dashboard and open Company again. Details: '+(error&&error.message?error.message:'Unknown error'));
+  }
+})();
 </script></body></html>

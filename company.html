@@ -39,7 +39,7 @@ function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function openCompany(c){location.href='index.html?companyId='+encodeURIComponent(c.id)}
 function renderCompanies(){const list=companies();$('companyList').innerHTML=list.length?list.map(c=>'<button class="company-choice" data-id="'+safe(c.id)+'"><span class="action-icon">▤</span><span><strong>'+safe(c.name)+'</strong><small>'+safe(c.address||c.owner||'Company profile')+'</small></span><span class="arrow">→</span></button>').join(''):'<div class="empty">No companies saved in this browser yet. Select <b>Create Company</b> to set up your store first.</div>'}
 $('year').textContent=new Date().getFullYear();
-$('createOpen').addEventListener('click',()=>{ $('createForm').reset();$('createMessage').textContent='';openDialog('createDialog');setTimeout(()=>$('companyName').focus(),0)});
+$('createOpen').addEventListener('click',()=>{location.href='create-company.html'});
 $('selectOpen').addEventListener('click',()=>{renderCompanies();openDialog('selectDialog')});
 $('exitOpen').addEventListener('click',()=>openDialog('exitDialog'));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).classList.add('hidden')));

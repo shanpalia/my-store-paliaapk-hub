@@ -20,4 +20,11 @@ grid.onclick=e=>{const b=e.target.closest("[data-add]");if(!b)return;const p=pro
 function openCart(){$("cartDrawer").classList.add("open");$("cartDrawer").setAttribute("aria-hidden","false");$("cartBackdrop").hidden=false;document.body.style.overflow="hidden"}function closeCart(){$("cartDrawer").classList.remove("open");$("cartDrawer").setAttribute("aria-hidden","true");$("cartBackdrop").hidden=true;document.body.style.overflow=""}
 $("cartOpen").onclick=openCart;$("cartClose").onclick=closeCart;$("cartBackdrop").onclick=closeCart;$("searchForm").onsubmit=e=>{e.preventDefault();renderProducts();$("products").scrollIntoView({behavior:"smooth"})};search.oninput=renderProducts;filter.onchange=renderProducts;document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{filter.value=b.dataset.category;renderProducts();$("products").scrollIntoView({behavior:"smooth"})});
 $("checkoutButton").onclick=()=>{if(!cart.size)return notify("Please add products to your cart first.");if(!STORE_WHATSAPP)return notify("Configure the store WhatsApp number in script.js first.");const lines=[...cart.values()].map(({product:p,qty})=>p.name+" x "+qty+" = "+money(p.price*qty)),total=[...cart.values()].reduce((s,x)=>s+x.qty*x.product.price,0),msg="Hello My Store By PaliaAPK HUB, I would like to request an order:\n"+lines.join("\n")+"\nSubtotal: "+money(total)+"\nPlease confirm availability and delivery details.";window.open("https://wa.me/"+STORE_WHATSAPP+"?text="+encodeURIComponent(msg),"_blank","noopener")};$("year").textContent=new Date().getFullYear();renderProducts();updateCart();
-// First load intentionally remains on company selection; choose or create a company explicitly.
+// A company selected on company.html opens the storefront directly.
+const selectedCompanyId = new URLSearchParams(window.location.search).get("companyId");
+if (selectedCompanyId) {
+  const selectedCompany = getCompanies().find(c => c.id === selectedCompanyId);
+  if (selectedCompany) openStore(selectedCompany);
+  else showStartup();
+}
+// First load without a selected company intentionally remains on company selection.

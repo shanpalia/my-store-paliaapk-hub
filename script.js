@@ -31,14 +31,13 @@ function renderCompanyPicker(){
 $('selectCompany').addEventListener('click',renderCompanyPicker);
 function openWorkspace(c){
  state.company=c;loadData();if(c&&c.id)history.replaceState(null,'',location.pathname+'?companyId='+encodeURIComponent(c.id));document.querySelectorAll('[data-menu-link]').forEach(a=>{const target=a.dataset.menuLink;a.href=target+(target.includes('?')?'&':'?')+'companyId='+encodeURIComponent(c.id)});$('startup').classList.add('hidden');$('workspace').classList.remove('hidden');
- $('activeCompany').textContent=c.name;$('footerCompany').textContent=c.name+' · My Store By PaliaAPK HUB';
+ $('footerCompany').textContent=c.name+' · My Store By PaliaAPK HUB';
  const profileImage=$('profileCompanyImage');if(profileImage){profileImage.src=c.logo||'';profileImage.alt=(c.name||'Company')+' image';profileImage.style.display=c.logo?'block':'none';}
  if($('profileCompanyName'))$('profileCompanyName').textContent=c.name||'Company';
  if($('profileCompanyType'))$('profileCompanyType').textContent=c.businessType||'Company profile';
  if($('profileCompanyOwner'))$('profileCompanyOwner').textContent=c.owner||'';
  renderAll();switchView('dashboard');
 }
-$('switchCompany').addEventListener('click',renderCompanyPicker);
 function closeProfileMenu(){const menu=$('profileMenu'),trigger=$('profileTrigger');if(menu)menu.classList.add('hidden');if(trigger)trigger.setAttribute('aria-expanded','false')}
 $('profileTrigger').addEventListener('click',e=>{e.stopPropagation();const menu=$('profileMenu'),open=menu.classList.toggle('hidden')===false;$('profileTrigger').setAttribute('aria-expanded',String(open))});
 document.addEventListener('click',e=>{if(!e.target.closest('.profile-wrap'))closeProfileMenu()});

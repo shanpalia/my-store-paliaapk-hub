@@ -26,9 +26,22 @@
     var company=id?all.find(function(item){return String(item.id)===String(id);}):null;
     if(!company && all.length===1){company=all[0];id=String(company.id);}
     if(!company){
-      $('form').innerHTML='<h2>No company selected</h2><p class="sub">Open your company from the company selection page first. If the company was saved in another browser or device, it will not appear here.</p><a class="btn primary" href="company.html">Select Company</a>';
-      $('backLink').href='company.html';
+      var form=$('form');
       document.querySelector('h1').textContent='Select a Company';
+      $('backLink').href='company.html';
+      if(all.length){
+        form.innerHTML='<h2>Choose the company to edit</h2><p class="sub">Select a company saved in this browser. Your existing inventory and company ID will be preserved.</p><div id="companyChoices" style="display:grid;gap:10px"></div><p class="msg" id="selectMessage" role="status"></p><a class="btn" href="company.html">Back to Company Selection</a>';
+        var choices=$('companyChoices');
+        all.forEach(function(item){
+          var button=document.createElement('button');
+          button.type='button'; button.className='btn'; button.style.textAlign='left'; button.style.padding='15px';
+          button.textContent=(item.name||'Unnamed Company')+'  →  Edit details';
+          button.addEventListener('click',function(){window.location.href='company-edit.html?companyId='+encodeURIComponent(item.id);});
+          choices.appendChild(button);
+        });
+      } else {
+        form.innerHTML='<h2>No company found in this browser</h2><p class="sub">Create or select your company first. If you already created one, make sure you are using the same browser profile and website address.</p><a class="btn primary" href="company.html">Open Company Selection</a>';
+      }
       return;
     }
     ['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'].forEach(function(key){if($(key)) $(key).value=company[key]||'';});

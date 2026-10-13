@@ -1,30 +1,124 @@
-const STORE_WHATSAPP=""; // Configure WhatsApp number: country code + number, no plus/spaces.
-const COMPANY_KEY="myStorePaliaCompaniesV1", $=id=>document.getElementById(id);let toastTimer;
-const companyScreen=$("companyScreen"),storeApp=$("storeApp"),companyModal=$("companyModal"),selectModal=$("selectModal"),exitModal=$("exitModal");
-function getCompanies(){try{const x=JSON.parse(localStorage.getItem(COMPANY_KEY)||"[]");return Array.isArray(x)?x:[]}catch{return[]}}
-function closeModals(){companyModal.hidden=true;selectModal.hidden=true;exitModal.hidden=true}
-function showStartup(){storeApp.hidden=true;companyScreen.hidden=false;closeModals();window.scrollTo(0,0)}
-function openStore(c){$("activeCompanyName").textContent=c.name;$("aboutCompanyText").textContent=c.name+" is the selected company workspace in My Store By PaliaAPK HUB.";const info=[c.owner,c.address,c.phone].filter(Boolean);$("contactCompanyText").textContent=info.length?info.join(" • "):"Store contact details have not been added yet.";const phone=(c.phone||"").replace(/\D/g,"");$("contactButton").href=phone?"https://wa.me/"+phone:"mailto:hello@example.com";companyScreen.hidden=true;storeApp.hidden=false;closeModals();window.scrollTo(0,0)}
-function openCreate(){$("companyForm").reset();$("formMessage").textContent="";companyModal.hidden=false;$("companyName").focus()}
-function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function renderCompanies(){const cs=getCompanies();$("companyList").innerHTML=cs.map(c=>'<button class="company-choice" data-id="'+escapeHtml(c.id)+'"><span class="option-icon">▤</span><span><strong>'+escapeHtml(c.name)+'</strong><small>'+escapeHtml(c.address||c.owner||"Company profile")+'</small></span><span class="option-arrow">→</span></button>').join("");$("noCompanies").hidden=cs.length>0}
-$("createCompanyBtn").onclick=()=>{window.location.href="create-company.html"};$("selectCompanyBtn").onclick=()=>{renderCompanies();selectModal.hidden=false};$("exitBtn").onclick=()=>exitModal.hidden=false;$("modalClose").onclick=()=>companyModal.hidden=true;$("selectModalClose").onclick=()=>selectModal.hidden=true;$("returnBtn").onclick=showStartup;$("exitCloseBtn").onclick=()=>exitModal.hidden=true;$("switchCompanyBtn").onclick=()=>{renderCompanies();selectModal.hidden=false};$("footerSwitchBtn").onclick=showStartup;
-$("companyForm").addEventListener("submit",e=>{e.preventDefault();const name=$("companyName").value.trim();if(!name){$("formMessage").textContent="Please enter a company name.";return}const c={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,owner:$("ownerName").value.trim(),address:$("storeAddress").value.trim(),phone:$("storePhone").value.trim()};try{const cs=getCompanies();cs.push(c);localStorage.setItem(COMPANY_KEY,JSON.stringify(cs));openStore(c)}catch{$("formMessage").textContent="Browser storage unavailable. Enable site storage and retry."}});
-$("companyList").onclick=e=>{const b=e.target.closest("[data-id]");if(!b)return;const c=getCompanies().find(x=>x.id===b.dataset.id);if(c)openStore(c)};[companyModal,selectModal,exitModal].forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.hidden=true}));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModals()});
-const products=[{id:1,name:"Everyday Rice",category:"Groceries",price:65,emoji:"🍚",tag:"Kitchen staple",tone:"#f6f1e6"},{id:2,name:"Tea & Breakfast Biscuits",category:"Snacks",price:35,emoji:"🍪",tag:"Popular",tone:"#fff0e1"},{id:3,name:"Dishwash Liquid",category:"Home Care",price:79,emoji:"🧴",tag:"Home essential",tone:"#e7f3ee"},{id:4,name:"Bathing Soap",category:"Personal Care",price:32,emoji:"🧼",tag:"Daily care",tone:"#e9f2fb"},{id:5,name:"Pasta Pack",category:"Groceries",price:45,emoji:"🍝",tag:"Quick meal",tone:"#fff2dc"},{id:6,name:"Fruit Juice",category:"Snacks",price:40,emoji:"🧃",tag:"Refreshment",tone:"#fcebe4"},{id:7,name:"Laundry Detergent",category:"Home Care",price:110,emoji:"🫧",tag:"Laundry",tone:"#e9f1fa"},{id:8,name:"Notebook & Pen",category:"Stationery",price:55,emoji:"📒",tag:"Work & study",tone:"#f5eddf"},{id:9,name:"Shampoo",category:"Personal Care",price:95,emoji:"🧴",tag:"Daily care",tone:"#f5eafa"},{id:10,name:"Cooking Oil",category:"Groceries",price:145,emoji:"🫙",tag:"Kitchen staple",tone:"#f8f1d9"},{id:11,name:"Potato Chips",category:"Snacks",price:20,emoji:"🥔",tag:"Snack time",tone:"#fff0e0"},{id:12,name:"Floor Cleaner",category:"Home Care",price:89,emoji:"🧹",tag:"Home essential",tone:"#e5f1e8"}];
-const cart=new Map(),grid=$("productGrid"),search=$("searchInput"),filter=$("categoryFilter"),toast=$("toast");
-function money(n){return "₹"+n.toLocaleString("en-IN")}function notify(s){toast.textContent=s;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2200)}
-function renderProducts(){const q=search.value.trim().toLowerCase(),cat=filter.value,list=products.filter(p=>(cat==="All"||p.category===cat)&&(`${p.name} ${p.category} ${p.tag}`).toLowerCase().includes(q));grid.innerHTML=list.map(p=>'<article class="product-card"><div class="product-visual" style="background:'+p.tone+'"><span class="product-tag">'+p.tag+'</span><span class="product-emoji">'+p.emoji+'</span></div><div class="product-info"><span class="product-category">'+p.category+'</span><h3>'+p.name+'</h3><div class="product-bottom"><span class="price">'+money(p.price)+'</span><button class="add-button" data-add="'+p.id+'">＋ Add</button></div></div></article>').join("");$("emptyState").hidden=list.length>0}
-function updateCart(){const count=[...cart.values()].reduce((s,x)=>s+x.qty,0),total=[...cart.values()].reduce((s,x)=>s+x.qty*x.product.price,0);$("cartCount").textContent=count;$("cartSubtotal").textContent=money(total);$("cartItems").innerHTML=cart.size?[...cart.values()].map(({product:p,qty})=>'<div class="cart-item"><div class="cart-item-emoji">'+p.emoji+'</div><div><strong>'+p.name+'</strong><small>'+money(p.price)+' each</small><div class="qty-controls"><button data-qty="'+p.id+'" data-delta="-1">−</button><span>'+qty+'</span><button data-qty="'+p.id+'" data-delta="1">+</button></div></div><span class="cart-item-price">'+money(p.price*qty)+'</span></div>').join(""):'<p class="cart-empty">Your cart is empty.</p>'}
-grid.onclick=e=>{const b=e.target.closest("[data-add]");if(!b)return;const p=products.find(x=>x.id===+b.dataset.add),old=cart.get(p.id);cart.set(p.id,{product:p,qty:old?old.qty+1:1});updateCart();notify(p.name+" added to cart")};$("cartItems").onclick=e=>{const b=e.target.closest("[data-qty]");if(!b)return;const id=+b.dataset.qty,item=cart.get(id);if(!item)return;item.qty+=+b.dataset.delta;if(item.qty<1)cart.delete(id);updateCart()};
-function openCart(){$("cartDrawer").classList.add("open");$("cartDrawer").setAttribute("aria-hidden","false");$("cartBackdrop").hidden=false;document.body.style.overflow="hidden"}function closeCart(){$("cartDrawer").classList.remove("open");$("cartDrawer").setAttribute("aria-hidden","true");$("cartBackdrop").hidden=true;document.body.style.overflow=""}
-$("cartOpen").onclick=openCart;$("cartClose").onclick=closeCart;$("cartBackdrop").onclick=closeCart;$("searchForm").onsubmit=e=>{e.preventDefault();renderProducts();$("products").scrollIntoView({behavior:"smooth"})};search.oninput=renderProducts;filter.onchange=renderProducts;document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{filter.value=b.dataset.category;renderProducts();$("products").scrollIntoView({behavior:"smooth"})});
-$("checkoutButton").onclick=()=>{if(!cart.size)return notify("Please add products to your cart first.");if(!STORE_WHATSAPP)return notify("Configure the store WhatsApp number in script.js first.");const lines=[...cart.values()].map(({product:p,qty})=>p.name+" x "+qty+" = "+money(p.price*qty)),total=[...cart.values()].reduce((s,x)=>s+x.qty*x.product.price,0),msg="Hello My Store By PaliaAPK HUB, I would like to request an order:\n"+lines.join("\n")+"\nSubtotal: "+money(total)+"\nPlease confirm availability and delivery details.";window.open("https://wa.me/"+STORE_WHATSAPP+"?text="+encodeURIComponent(msg),"_blank","noopener")};$("year").textContent=new Date().getFullYear();renderProducts();updateCart();
-// A company selected on company.html opens the storefront directly.
-const selectedCompanyId = new URLSearchParams(window.location.search).get("companyId");
-if (selectedCompanyId) {
-  const selectedCompany = getCompanies().find(c => c.id === selectedCompanyId);
-  if (selectedCompany) openStore(selectedCompany);
-  else showStartup();
+(()=>{
+'use strict';
+const COMPANY_KEY='myStorePaliaCompaniesV1';
+const $=id=>document.getElementById(id);
+const state={company:null,items:[],vouchers:[],view:'dashboard',editing:null,toastTimer:null};
+const today=()=>new Date().toISOString().slice(0,10);
+const money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=n=>Number.isFinite(Number(n))?Number(n):0;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const companyDataKey=id=>'myStoreInventoryV1_'+id;
+function getCompanies(){try{const x=JSON.parse(localStorage.getItem(COMPANY_KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
+function saveCompanies(x){localStorage.setItem(COMPANY_KEY,JSON.stringify(x))}
+function loadData(){try{const x=JSON.parse(localStorage.getItem(companyDataKey(state.company.id))||'{}');state.items=Array.isArray(x.items)?x.items:[];state.vouchers=Array.isArray(x.vouchers)?x.vouchers:[]}catch{state.items=[];state.vouchers=[]}}
+function saveData(){localStorage.setItem(companyDataKey(state.company.id),JSON.stringify({items:state.items,vouchers:state.vouchers}))}
+function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>el.classList.add('hidden'),2800)}
+function openModal(id){$(id).classList.remove('hidden')}
+function closeModal(id){$(id).classList.add('hidden')}
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-bg:not(.hidden)').forEach(m=>m.classList.add('hidden'))});
+$('createCompany').addEventListener('click',()=>location.href='create-company.html');
+function renderCompanyPicker(){
+ const list=getCompanies();let old=$('companyPicker');if(old)old.remove();
+ const bg=document.createElement('div');bg.id='companyPicker';bg.className='modal-bg';
+ bg.innerHTML='<section class="modal" role="dialog" aria-modal="true"><div class="modal-head"><div><div class="eyebrow">COMPANY WORKSPACES</div><h2>Select Company</h2><p>Open a company saved in this browser.</p></div><button class="close-btn" id="pickerClose">×</button></div><div id="pickerList"></div></section>';
+ document.body.appendChild(bg);$('pickerClose').onclick=()=>bg.remove();
+ $('pickerList').innerHTML=list.length?list.map(c=>'<button class="quick" data-company="'+esc(c.id)+'" style="width:100%;margin:8px 0"><span class="qicon">▤</span><span><strong>'+esc(c.name)+'</strong><small>'+esc(c.businessType||c.address||c.owner||'Company profile')+'</small></span></button>').join(''):'<div class="empty"><strong>No company found</strong>Create a company profile first.</div>';
+ $('pickerList').addEventListener('click',e=>{const b=e.target.closest('[data-company]');if(b){const c=list.find(x=>String(x.id)===b.dataset.company);if(c){bg.remove();openWorkspace(c)}}});
+ bg.addEventListener('click',e=>{if(e.target===bg)bg.remove()});
 }
-// First load without a selected company intentionally remains on company selection.
+$('selectCompany').addEventListener('click',renderCompanyPicker);
+function openWorkspace(c){
+ state.company=c;loadData();$('startup').classList.add('hidden');$('workspace').classList.remove('hidden');
+ $('activeCompany').textContent=c.name;$('footerCompany').textContent=c.name+' · My Store By PaliaAPK HUB';
+ renderAll();switchView('dashboard');
+}
+$('switchCompany').addEventListener('click',renderCompanyPicker);
+$('exitWorkspace').addEventListener('click',()=>{state.company=null;$('workspace').classList.add('hidden');$('startup').classList.remove('hidden');window.scrollTo(0,0)});
+$('brandHome').addEventListener('click',e=>{e.preventDefault();switchView('dashboard')});
+function getItem(id){return state.items.find(i=>i.id===id)}
+function itemStatus(i){if(num(i.qty)<=0)return 'out';if(num(i.qty)<=num(i.minQty))return 'low';return 'ok'}
+function statusBadge(i){const s=itemStatus(i);return s==='out'?'<span class="badge out">Out of stock</span>':s==='low'?'<span class="badge low">Low stock</span>':'<span class="badge">In stock</span>'}
+function itemRow(i,actions=true){return '<tr><td><div class="item-name">'+esc(i.name)+'</div><div class="item-sub">'+esc(i.sku||'No item code')+'</div></td><td>'+esc(i.category||'Other')+'</td><td>'+esc(i.unit||'pcs')+'</td><td class="qty">'+num(i.qty).toLocaleString('en-IN',{maximumFractionDigits:3})+'</td><td>'+money(i.purchaseRate)+'</td><td>'+money(i.saleRate)+'</td><td>'+money(num(i.qty)*num(i.purchaseRate))+'</td><td>'+statusBadge(i)+'</td>'+(actions?'<td><button class="outline-btn" data-edit="'+esc(i.id)+'">Edit</button> <button class="outline-btn" data-voucher-in="'+esc(i.id)+'">＋</button> <button class="outline-btn" data-voucher-out="'+esc(i.id)+'">−</button></td>':'')+'</tr>'}
+function emptyTable(title,desc,button=true){return '<div class="empty"><div class="empty-icon">▤</div><strong>'+title+'</strong>'+desc+(button?'<div style="margin-top:15px"><button class="primary-btn" data-empty-add>＋ Create Stock Item</button></div>':'')+'</div>'}
+function tableHTML(items,actions=true){if(!items.length)return emptyTable('No stock items yet','Create your first item to start tracking real inventory.');return '<div class="table-wrap"><table><thead><tr><th>Item / SKU</th><th>Category</th><th>Unit</th><th>Balance Qty</th><th>Purchase Rate</th><th>Sale Rate</th><th>Stock Value</th><th>Status</th>'+(actions?'<th>Actions</th>':'')+'</tr></thead><tbody>'+items.map(i=>itemRow(i,actions)).join('')+'</tbody></table></div>'}
+function renderDashboard(){
+ const qty=state.items.reduce((s,i)=>s+num(i.qty),0),value=state.items.reduce((s,i)=>s+num(i.qty)*num(i.purchaseRate),0),low=state.items.filter(i=>itemStatus(i)!=='ok').length;
+ $('statItems').textContent=state.items.length.toLocaleString('en-IN');$('statQty').textContent=qty.toLocaleString('en-IN',{maximumFractionDigits:3});$('statValue').textContent=money(value);$('statLow').textContent=low;
+ $('dashboardTable').innerHTML=tableHTML([...state.items].sort((a,b)=>a.name.localeCompare(b.name)).slice(0,8),true);
+ $('recentVouchers').innerHTML=renderRecentVouchers(state.vouchers.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5));
+}
+function renderItems(){
+ const q=($('itemSearch').value||'').trim().toLowerCase(),cat=$('categoryFilter').value;
+ const list=state.items.filter(i=>(!cat||i.category===cat)&&[i.name,i.sku,i.category].join(' ').toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
+ $('itemCountLabel').textContent=list.length+' of '+state.items.length+' items';$('itemsTable').innerHTML=tableHTML(list,true);
+}
+function renderRecentVouchers(list){if(!list.length)return '<div class="empty"><div class="empty-icon">⇄</div><strong>No vouchers recorded</strong>Stock In and Stock Out entries will appear here.</div>';return list.map(v=>'<div class="ledger-row"><div><strong>'+esc(v.type==='IN'?'Stock In':'Stock Out')+' · '+esc(v.itemName)+'</strong><small>'+esc(v.date)+' · '+esc(v.voucherNo||'Voucher')+(v.party?' · '+esc(v.party):'')+'</small></div><div style="text-align:right"><div class="ledger-amount '+(v.type==='IN'?'in':'out')+'">'+(v.type==='IN'?'+':'−')+num(v.qty).toLocaleString('en-IN',{maximumFractionDigits:3})+' '+esc(v.unit)+'</div><small>'+money(num(v.qty)*num(v.rate))+'</small></div></div>').join('')}
+function renderVouchers(){const q=($('voucherSearch').value||'').trim().toLowerCase();const list=state.vouchers.filter(v=>[v.itemName,v.voucherNo,v.party,v.type,v.date].join(' ').toLowerCase().includes(q)).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||'').localeCompare(a.createdAt||''));if(!list.length){$('voucherTable').innerHTML=emptyTable('No stock vouchers yet','Use Stock In or Stock Out to record inventory movement.',false);return}
+ $('voucherTable').innerHTML='<div class="table-wrap"><table><thead><tr><th>Date</th><th>Voucher No.</th><th>Type</th><th>Item</th><th>Party / Reference</th><th>Quantity</th><th>Rate</th><th>Amount</th><th>Narration</th></tr></thead><tbody>'+list.map(v=>'<tr><td>'+esc(v.date)+'</td><td>'+esc(v.voucherNo)+'</td><td><span class="badge '+(v.type==='IN'?'':'low')+'">'+(v.type==='IN'?'Stock In':'Stock Out')+'</span></td><td><span class="item-name">'+esc(v.itemName)+'</span></td><td>'+esc(v.party||'—')+'</td><td>'+num(v.qty).toLocaleString('en-IN',{maximumFractionDigits:3})+' '+esc(v.unit)+'</td><td>'+money(v.rate)+'</td><td>'+money(num(v.qty)*num(v.rate))+'</td><td>'+esc(v.note||'—')+'</td></tr>').join('')+'</tbody></table></div>'}
+function renderReports(){
+ const cost=state.items.reduce((s,i)=>s+num(i.qty)*num(i.purchaseRate),0),sale=state.items.reduce((s,i)=>s+num(i.qty)*num(i.saleRate),0);
+ $('reportValue').textContent=money(cost);$('reportSaleValue').textContent=money(sale);$('reportIn').textContent=state.vouchers.filter(v=>v.type==='IN').length;$('reportOut').textContent=state.vouchers.filter(v=>v.type==='OUT').length;
+ const low=state.items.filter(i=>itemStatus(i)!=='ok');$('lowStockTable').innerHTML=tableHTML(low,false);
+ const cats={};state.items.forEach(i=>{const k=i.category||'Other';cats[k]??={qty:0,value:0,count:0};cats[k].qty+=num(i.qty);cats[k].value+=num(i.qty)*num(i.purchaseRate);cats[k].count++});
+ const rows=Object.entries(cats).sort((a,b)=>a[0].localeCompare(b[0]));$('categoryReport').innerHTML=rows.length?'<div class="table-wrap"><table><thead><tr><th>Category</th><th>Items</th><th>Quantity</th><th>Stock Value</th></tr></thead><tbody>'+rows.map(([k,v])=>'<tr><td class="item-name">'+esc(k)+'</td><td>'+v.count+'</td><td>'+v.qty.toLocaleString('en-IN',{maximumFractionDigits:3})+'</td><td>'+money(v.value)+'</td></tr>').join('')+'</tbody></table></div>':emptyTable('No category data','Add stock items to build category reports.',false);
+}
+function renderAll(){renderDashboard();renderItems();renderVouchers();renderReports();refreshVoucherItemOptions()}
+function switchView(view){state.view=view;['dashboard','items','transactions','reports'].forEach(v=>$(v+'View').classList.toggle('hidden',v!==view));document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:'smooth'});if(view==='items')renderItems();if(view==='transactions')renderVouchers();if(view==='reports')renderReports()}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.goto)));
+function openItemModal(){state.editing=null;$('itemForm').reset();$('itemModalTitle').textContent='Create Stock Item';$('itemOpening').value='0';$('itemMin').value='0';$('itemPurchase').value='0';$('itemSale').value='0';$('itemError').textContent='';openModal('itemModal')}
+['addItemTop','addItemPage','quickAdd'].forEach(id=>$(id).addEventListener('click',openItemModal));
+document.addEventListener('click',e=>{if(e.target.closest('[data-empty-add]'))openItemModal()});
+$('itemForm').addEventListener('submit',e=>{
+ e.preventDefault();const name=$('itemName').value.trim(),sku=$('itemSku').value.trim(),opening=num($('itemOpening').value);
+ if(!name){$('itemError').textContent='Item name is required.';return}
+ if(sku&&state.items.some(i=>i.sku.toLowerCase()===sku.toLowerCase())){$('itemError').textContent='This item code already exists. Please use a unique code.';return}
+ const i={id:'itm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name,sku,category:$('itemCategory').value,unit:$('itemUnit').value,minQty:num($('itemMin').value),purchaseRate:num($('itemPurchase').value),saleRate:num($('itemSale').value),qty:opening,createdAt:new Date().toISOString()};
+ state.items.push(i);
+ if(opening>0)state.vouchers.push({id:'v_'+Date.now(),voucherNo:nextVoucherNo(),type:'IN',itemId:i.id,itemName:i.name,unit:i.unit,qty:opening,rate:i.purchaseRate,date:today(),party:'Opening Stock',note:'Opening balance',createdAt:new Date().toISOString()});
+ try{saveData();closeModal('itemModal');renderAll();showToast('Stock item saved.')}catch(err){state.items=state.items.filter(x=>x.id!==i.id);showToast('Browser storage is full or unavailable. Export data and retry.')}
+});
+function nextVoucherNo(){return 'INV-'+String(state.vouchers.length+1).padStart(5,'0')}
+function refreshVoucherItemOptions(selected=''){const sel=$('voucherItem');if(!sel)return;sel.innerHTML='<option value="">Select stock item</option>'+state.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(i=>'<option value="'+esc(i.id)+'">'+esc(i.name)+' · Balance '+num(i.qty).toLocaleString('en-IN',{maximumFractionDigits:3})+' '+esc(i.unit)+'</option>').join('');if(selected)sel.value=selected}
+function openVoucher(type='IN',itemId=''){
+ if(!state.items.length){showToast('Create a stock item before recording a voucher.');openItemModal();return}
+ $('voucherForm').reset();$('voucherType').value=type;$('voucherDate').value=today();$('voucherQty').value='';$('voucherRate').value='0';$('voucherError').textContent='';refreshVoucherItemOptions(itemId);
+ $('voucherTitle').textContent=type==='IN'?'Stock In / Purchase':'Stock Out / Issue';$('voucherDescription').textContent=type==='IN'?'Record goods received or purchased.':'Record goods issued, sold or removed from stock.';
+ if(itemId){const i=getItem(itemId);if(i)$('voucherRate').value=type==='IN'?i.purchaseRate:i.saleRate}
+ openModal('voucherModal');
+}
+['stockInQuick','quickIn','stockInPage'].forEach(id=>$(id).addEventListener('click',()=>openVoucher('IN')));
+['stockOutQuick','quickOut','stockOutPage'].forEach(id=>$(id).addEventListener('click',()=>openVoucher('OUT')));
+$('voucherType').addEventListener('change',()=>{const i=getItem($('voucherItem').value);$('voucherTitle').textContent=$('voucherType').value==='IN'?'Stock In / Purchase':'Stock Out / Issue';if(i)$('voucherRate').value=$('voucherType').value==='IN'?i.purchaseRate:i.saleRate});
+$('voucherItem').addEventListener('change',()=>{const i=getItem($('voucherItem').value);if(i)$('voucherRate').value=$('voucherType').value==='IN'?i.purchaseRate:i.saleRate});
+$('voucherForm').addEventListener('submit',e=>{
+ e.preventDefault();const type=$('voucherType').value,i=getItem($('voucherItem').value),qty=num($('voucherQty').value),rate=num($('voucherRate').value);
+ if(!i){$('voucherError').textContent='Please select a stock item.';return}
+ if(qty<=0){$('voucherError').textContent='Quantity must be greater than zero.';return}
+ if(type==='OUT'&&qty>num(i.qty)){$('voucherError').textContent='Insufficient stock. Available balance: '+num(i.qty)+' '+i.unit+'.';return}
+ const v={id:'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),voucherNo:nextVoucherNo(),type,itemId:i.id,itemName:i.name,unit:i.unit,qty,rate,date:$('voucherDate').value,party:$('voucherParty').value.trim(),note:$('voucherNote').value.trim(),createdAt:new Date().toISOString()};
+ i.qty=type==='IN'?num(i.qty)+qty:num(i.qty)-qty;
+ if(type==='IN'&&rate>0)i.purchaseRate=rate;if(type==='OUT'&&rate>0)i.saleRate=rate;
+ state.vouchers.push(v);
+ try{saveData();closeModal('voucherModal');renderAll();showToast(v.voucherNo+' saved successfully.')}catch(err){i.qty=type==='IN'?num(i.qty)-qty:num(i.qty)+qty;state.vouchers.pop();showToast('Could not save voucher. Browser storage may be full.')}
+});
+function openEdit(id){const i=getItem(id);if(!i)return;$('editId').value=i.id;$('editName').value=i.name;$('editSku').value=i.sku||'';$('editCategory').value=i.category||'Other';$('editUnit').value=i.unit||'pcs';$('editMin').value=num(i.minQty);$('editPurchase').value=num(i.purchaseRate);$('editSale').value=num(i.saleRate);$('editError').textContent='';openModal('editModal')}
+document.addEventListener('click',e=>{
+ const edit=e.target.closest('[data-edit]');if(edit)openEdit(edit.dataset.edit);
+ const vin=e.target.closest('[data-voucher-in]');if(vin)openVoucher('IN',vin.dataset.voucherIn);
+ const vout=e.target.closest('[data-voucher-out]');if(vout)openVoucher('OUT',vout.dataset.voucherOut);
+});
+$('editForm').addEventListener('submit',e=>{e.preventDefault();const i=getItem($('editId').value),name=$('editName').value.trim(),sku=$('editSku').value.trim();if(!i)return;if(!name){$('editError').textContent='Item name is required.';return}if(sku&&state.items.some(x=>x.id!==i.id&&x.sku.toLowerCase()===sku.toLowerCase())){$('editError').textContent='This item code already exists.';return}i.name=name;i.sku=sku;i.category=$('editCategory').value;i.unit=$('editUnit').value;i.minQty=num($('editMin').value);i.purchaseRate=num($('editPurchase').value);i.saleRate=num($('editSale').value);state.vouchers.forEach(v=>{if(v.itemId===i.id){v.itemName=i.name;v.unit=i.unit}});saveData();closeModal('editModal');renderAll();showToast('Item details updated.')});
+$('itemSearch').addEventListener('input',renderItems);$('categoryFilter').addEventListener('change',renderItems);$('voucherSearch').addEventListener('input',renderVouchers);
+function csvCell(v){const s=String(v??'');return '"'+s.replace(/"/g,'""')+'"'}
+function downloadCSV(filename,rows){const csv='\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);showToast('CSV export started.')}
+function exportItems(){downloadCSV('inventory-items-'+today()+'.csv',[['Item Name','SKU','Category','Unit','Quantity','Reorder Level','Purchase Rate','Sale Rate','Stock Value','Status'],...state.items.map(i=>[i.name,i.sku,i.category,i.unit,i.qty,i.minQty,i.purchaseRate,i.saleRate,num(i.qty)*num(i.purchaseRate),itemStatus(i)])])}
+['exportCsv','itemsExport','reportsExport'].forEach(id=>$(id).addEventListener('click',exportItems));
+function init(){
+ const id=new URLSearchParams(location.search).get('companyId');const cs=getCompanies();const c=id?cs.find(x=>String(x.id)===id):null;
+ if(c)openWorkspace(c);else{$('startup').classList.remove('hidden');$('workspace').classList.add('hidden')}
+}
+init();
+})();

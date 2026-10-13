@@ -30,7 +30,7 @@ function renderCompanyPicker(){
 }
 $('selectCompany').addEventListener('click',renderCompanyPicker);
 function openWorkspace(c){
- state.company=c;loadData();$('startup').classList.add('hidden');$('workspace').classList.remove('hidden');
+ state.company=c;loadData();if(c&&c.id)history.replaceState(null,'',location.pathname+'?companyId='+encodeURIComponent(c.id));document.querySelectorAll('[data-menu-link]').forEach(a=>{const target=a.dataset.menuLink;a.href=target+(target.includes('?')?'&':'?')+'companyId='+encodeURIComponent(c.id)});$('startup').classList.add('hidden');$('workspace').classList.remove('hidden');
  $('activeCompany').textContent=c.name;$('footerCompany').textContent=c.name+' · My Store By PaliaAPK HUB';
  renderAll();switchView('dashboard');
 }

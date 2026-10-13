@@ -46,6 +46,7 @@ const initialAmount=(num(qty)*num(rate)).toFixed(2);
 const tr=document.createElement('tr');
 tr.innerHTML='<td><div class="field-with-add"><div><select class="line-item" required><option value="">Select item</option>'+itemOptions+'</select></div><button type="button" class="plus-btn quick-add-item" title="Add item" aria-label="Add item">+</button></div></td><td class="line-stock">—</td><td><input class="line-qty" type="number" min="0.001" step="any" required value="'+qty+'" placeholder="Qty"></td><td><input class="line-rate" type="number" min="0" step="0.01" required value="'+rate+'" placeholder="Enter rate" aria-label="Rate"></td><td><input class="line-amount-input" type="number" min="0" step="0.01" required value="'+initialAmount+'" placeholder="Enter amount"></td><td><button type="button" class="btn line-remove" aria-label="Remove row">×</button></td>';
 body.appendChild(tr);
+tr.querySelector('.quick-add-item').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();quickAddItem(tr)});
 const sel=tr.querySelector('.line-item'),q=tr.querySelector('.line-qty'),r=tr.querySelector('.line-rate'),amt=tr.querySelector('.line-amount-input');
 amt.dataset.manual='no';
 if(itemId)sel.value=itemId;
@@ -85,7 +86,7 @@ else{tr.remove();updateTotals()}
 if(itemId&&data.items.find(i=>i.id===itemId)){r.value=num(rate||data.items.find(i=>i.id===itemId).purchaseRate).toFixed(2)}
 updateTotals();
 }
-if(editVoucher){addLine(editVoucher.itemId,editVoucher.qty,editVoucher.rate)}else{addLine()}$('addPurchaseLine').onclick=()=>addLine();$('quickAddAccount').onclick=quickAddAccount;$('purchaseLineRows').addEventListener('click',e=>{if(e.target.closest('.quick-add-item'))quickAddItem(e.target.closest('tr'))});$('closePurchaseForm').onclick=()=>{$('purchaseFormPanel').innerHTML=''};$('cancelPurchase').onclick=()=>{$('purchaseFormPanel').innerHTML=''};
+if(editVoucher){addLine(editVoucher.itemId,editVoucher.qty,editVoucher.rate)}else{addLine()}$('addPurchaseLine').onclick=()=>addLine();$('quickAddAccount').onclick=e=>{e.preventDefault();quickAddAccount()};$('closePurchaseForm').onclick=()=>{$('purchaseFormPanel').innerHTML=''};$('cancelPurchase').onclick=()=>{$('purchaseFormPanel').innerHTML=''};
 form.onsubmit=e=>{e.preventDefault();$('purchaseError').textContent='';const lines=[...body.querySelectorAll('tr')].map(tr=>({item:data.items.find(i=>i.id===tr.querySelector('.line-item').value),qty:num(tr.querySelector('.line-qty').value),amount:num(tr.querySelector('.line-amount-input').value),rate:num(tr.querySelector('.line-rate').value)}));if(!lines.length||lines.some(l=>!l.item||l.qty<=0||l.amount<0||!Number.isFinite(l.amount))){$('purchaseError').textContent='Har row mein item, valid quantity aur amount bharein.';return}
 const voucherNo=form.elements.voucherNo.value.trim();if(data.vouchers.some(v=>v.type==='IN'&&String(v.id)!==String(editVoucher?.id)&&String(v.voucherNo).toLowerCase()===voucherNo.toLowerCase())){$('purchaseError').textContent='Yeh purchase voucher number pehle se maujood hai. Unique number enter karein.';form.elements.voucherNo.focus();return}
 const duplicateLines=new Set();for(const l of lines){if(duplicateLines.has(l.item.id)){/* duplicate item lines are allowed */}duplicateLines.add(l.item.id)}

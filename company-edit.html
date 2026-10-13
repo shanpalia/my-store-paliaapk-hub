@@ -1,70 +1,139 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#126b4f"><title>Edit Company | My Store By PaliaAPK HUB"><style>body{font-family:Arial,sans-serif;margin:20px;color:#192a23;background:#fff}header{padding:12px;border-bottom:1px solid #ddd}main{display:block!important;max-width:900px;margin:24px auto}form{display:block!important;border:1px solid #ddd;padding:20px;margin-top:20px}input,textarea{display:block;width:95%;padding:10px;margin:6px 0 16px;border:1px solid #aaa}button,.btn{display:inline-block;padding:10px 14px;background:#126b4f;color:white;border:0;text-decoration:none;cursor:pointer}label{font-weight:bold} .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style></head><body><header class="top"><a class="brand" href="index.html">My Store <small>BY PALIAAPK HUB</small></a><span style="font-size:10px;color:#718076">COMPANY MASTER</span></header><main class="wrap"><div class="crumb"><a id="backLink" href="index.html">← Dashboard</a> / Company Name</div><div style="font-size:10px;letter-spacing:1.5px;color:var(--g);font-weight:850">COMPANY SETTINGS</div><h1>Edit Company Details</h1><p class="sub">Update the selected company's name, contact, address and business registration details. Your existing inventory remains linked to the same company ID.</p><form class="card" id="form"><div class="grid">
-<div class="field full"><label for="name">Company / Store Name *</label><input id="name" required maxlength="100"></div>
-<div><label for="businessType">Business Type</label><input id="businessType" maxlength="80"></div><div><label for="owner">Owner / Contact Person</label><input id="owner" maxlength="100"></div>
-<div><label for="phone">Mobile / WhatsApp</label><input id="phone" maxlength="30" inputmode="tel"></div><div><label for="email">Business Email</label><input id="email" type="email" maxlength="120"></div>
-<div class="field full"><label for="address">Address</label><textarea id="address" maxlength="500"></textarea></div>
-<div><label for="city">City / Town</label><input id="city" maxlength="80"></div><div><label for="state">State</label><input id="state" maxlength="80"></div><div><label for="pincode">PIN Code</label><input id="pincode" maxlength="6" inputmode="numeric"></div><div><label for="country">Country</label><input id="country" maxlength="60"></div>
-<div><label for="gstin">GSTIN</label><input id="gstin" maxlength="15" autocapitalize="characters"></div><div><label for="pan">PAN</label><input id="pan" maxlength="10" autocapitalize="characters"></div>
-</div><div class="note">Company data is stored in this browser only. Editing the company profile does not change its ID or delete inventory/voucher history.</div><div class="msg" id="msg" role="status"></div><div class="actions"><a class="btn" id="cancel" href="index.html">Cancel</a><button class="btn primary" type="submit">Save Company Details</button></div></form></main>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#126b4f">
+<title>Edit Company | My Store By PaliaAPK HUB</title>
+<style>
+*{box-sizing:border-box}html{background:#f4f8f5}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#203128;background:#f4f8f5;min-height:100vh}header{background:#fff;border-bottom:1px solid #dce7df;padding:18px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}header a{color:#126b4f;text-decoration:none;font-weight:bold}header small{display:block;color:#718078;font-size:10px;letter-spacing:1px;margin-top:4px}main{width:min(900px,calc(100% - 28px));margin:28px auto 50px}.crumb{font-size:13px;margin-bottom:22px}.crumb a{color:#126b4f;text-decoration:none}.panel{background:#fff;border:1px solid #dce7df;border-radius:14px;padding:clamp(18px,4vw,32px);box-shadow:0 8px 28px rgba(20,60,40,.05)}.eyebrow{font-size:11px;font-weight:bold;letter-spacing:1.6px;color:#126b4f}h1{font-size:clamp(26px,4vw,36px);margin:10px 0}p{color:#65756b;font-size:14px;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:24px}.field.full{grid-column:1/-1}label{display:block;font-weight:bold;font-size:12px;margin-bottom:7px}input,textarea{display:block;width:100%;min-height:42px;padding:11px;border:1px solid #cbd8ce;border-radius:8px;background:#fff;color:#203128;font:inherit}textarea{min-height:84px;resize:vertical}input:focus,textarea:focus{outline:2px solid #a4d5b4;border-color:#126b4f}.note{font-size:12px;color:#65756b;background:#f2f8f3;border-radius:8px;padding:12px;margin-top:20px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 16px;border:1px solid #126b4f;border-radius:8px;text-decoration:none;font-weight:bold;font-size:13px;cursor:pointer}.primary{background:#126b4f;color:#fff}.secondary{background:#fff;color:#126b4f}.message{margin-top:12px;color:#a32d2d;font-size:13px;overflow-wrap:anywhere}.choices{display:grid;gap:10px;margin:18px 0}.choice{width:100%;padding:14px;text-align:left;background:#fff;border:1px solid #dce7df;border-radius:8px;color:#203128;cursor:pointer}.choice:hover{border-color:#126b4f;background:#f5faf6}.hidden{display:none}@media(max-width:600px){header{padding:15px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<header><a href="index.html">My Store<small>BY PALIAAPK HUB</small></a><span style="font-size:11px;color:#718078">COMPANY MASTER</span></header>
+<main>
+<div class="crumb"><a id="backLink" href="company.html">← Company Selection</a> / Edit Company</div>
+<section class="panel">
+<div class="eyebrow">COMPANY SETTINGS</div>
+<h1 id="pageTitle">Edit Company Details</h1>
+<p id="intro">Update your company profile. Your company ID, stock items and voucher history will remain unchanged.</p>
+<div id="status" class="message" role="status" aria-live="polite"></div>
+<div id="picker" class="choices hidden"></div>
+<form id="companyForm">
+<div class="grid">
+<div class="field full"><label for="name">Company / Store Name *</label><input id="name" name="name" required maxlength="100"></div>
+<div><label for="businessType">Business Type</label><input id="businessType" name="businessType" maxlength="80"></div>
+<div><label for="owner">Owner / Contact Person</label><input id="owner" name="owner" maxlength="100"></div>
+<div><label for="phone">Mobile / WhatsApp</label><input id="phone" name="phone" maxlength="30" inputmode="tel"></div>
+<div><label for="email">Business Email</label><input id="email" name="email" type="email" maxlength="120"></div>
+<div class="field full"><label for="address">Address</label><textarea id="address" name="address" maxlength="500"></textarea></div>
+<div><label for="city">City / Town</label><input id="city" name="city" maxlength="80"></div>
+<div><label for="state">State</label><input id="state" name="state" maxlength="80"></div>
+<div><label for="pincode">PIN Code</label><input id="pincode" name="pincode" maxlength="6" inputmode="numeric"></div>
+<div><label for="country">Country</label><input id="country" name="country" maxlength="60"></div>
+<div><label for="gstin">GSTIN</label><input id="gstin" name="gstin" maxlength="15" autocapitalize="characters"></div>
+<div><label for="pan">PAN</label><input id="pan" name="pan" maxlength="10" autocapitalize="characters"></div>
+</div>
+<div class="note">Company data is saved in this browser only. This page does not delete or recreate your company or inventory.</div>
+<div class="actions"><a class="btn secondary" id="cancelLink" href="company.html">Cancel</a><button class="btn primary" type="submit">Save Company Details</button></div>
+</form>
+</section>
+</main>
 <script>
 (function(){
-  'use strict';
-  var KEY='myStorePaliaCompaniesV1';
-  var $=function(id){return document.getElementById(id);};
-  function showError(message){
-    var form=$('form');
-    if(form){form.innerHTML='<h2>Company page could not load</h2><p class="sub"></p><a class="btn primary" href="company.html">Open Company Selection</a>';form.querySelector('.sub').textContent=message;}
-  }
-  try {
-    var id=new URLSearchParams(window.location.search).get('companyId');
-    var all=[];
-    try { all=JSON.parse(window.localStorage.getItem(KEY)||'[]'); } catch(e) { all=[]; }
-    if(!Array.isArray(all)) all=[];
-    var company=id?all.find(function(item){return String(item.id)===String(id);}):null;
-    if(!company && all.length===1){company=all[0];id=String(company.id);}
-    if(!company){
-      var form=$('form');
-      document.querySelector('h1').textContent='Select a Company';
-      $('backLink').href='company.html';
-      if(all.length){
-        form.innerHTML='<h2>Choose the company to edit</h2><p class="sub">Select a company saved in this browser. Your existing inventory and company ID will be preserved.</p><div id="companyChoices" style="display:grid;gap:10px"></div><p class="msg" id="selectMessage" role="status"></p><a class="btn" href="company.html">Back to Company Selection</a>';
-        var choices=$('companyChoices');
-        all.forEach(function(item){
-          var button=document.createElement('button');
-          button.type='button'; button.className='btn'; button.style.textAlign='left'; button.style.padding='15px';
-          button.textContent=(item.name||'Unnamed Company')+'  →  Edit details';
-          button.addEventListener('click',function(){window.location.href='company-edit.html?companyId='+encodeURIComponent(item.id);});
-          choices.appendChild(button);
-        });
-      } else {
-        form.innerHTML='<h2>No company found in this browser</h2><p class="sub">Create or select your company first. If you already created one, make sure you are using the same browser profile and website address.</p><a class="btn primary" href="company.html">Open Company Selection</a>';
-      }
-      return;
-    }
-    ['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'].forEach(function(key){if($(key)) $(key).value=company[key]||'';});
-    $('backLink').href='index.html?companyId='+encodeURIComponent(company.id);
-    $('cancel').href=$('backLink').href;
-    $('form').addEventListener('submit',function(event){
-      event.preventDefault();
-      var name=$('name').value.trim();
-      if(!name){$('msg').textContent='Company name is required.';$('name').focus();return;}
-      var email=$('email').value.trim();
-      if(email && !$('email').checkValidity()){$('msg').textContent='Enter a valid email address or leave it blank.';return;}
-      var index=all.findIndex(function(item){return String(item.id)===String(id);});
-      if(index<0){$('msg').textContent='Company record not found. Please select the company again.';return;}
-      all[index]=Object.assign({},all[index],{
-        name:name,businessType:$('businessType').value.trim(),owner:$('owner').value.trim(),
-        phone:$('phone').value.trim(),email:email,address:$('address').value.trim(),
-        city:$('city').value.trim(),state:$('state').value.trim(),pincode:$('pincode').value.trim(),
-        country:$('country').value.trim(),gstin:$('gstin').value.trim().toUpperCase(),
-        pan:$('pan').value.trim().toUpperCase(),updatedAt:new Date().toISOString()
-      });
-      try { window.localStorage.setItem(KEY,JSON.stringify(all));window.location.href='index.html?companyId='+encodeURIComponent(id); }
-      catch(error){$('msg').textContent='Could not save changes. Please check browser storage settings.';}
-    });
-  } catch(error) {
-    showError('Please return to the dashboard and open Company again. Details: '+(error&&error.message?error.message:'Unknown error'));
-  }
+'use strict';
+var KEY='myStorePaliaCompaniesV1';
+var fields=['name','businessType','owner','phone','email','address','city','state','pincode','country','gstin','pan'];
+var selectedId=null;
+var allCompanies=[];
+function byId(id){return document.getElementById(id);}
+function setStatus(text){byId('status').textContent=text||'';}
+function readCompanies(){
+ try{
+  var value=window.localStorage.getItem(KEY);
+  var parsed=JSON.parse(value||'[]');
+  return Array.isArray(parsed)?parsed:[];
+ }catch(error){
+  setStatus('Browser storage could not be read. Please allow site data for this website, then reload.');
+  return [];
+ }
+}
+function companyId(item){return item&&item.id!==undefined&&item.id!==null?String(item.id):'';}
+function goBack(){
+ var url='company.html';
+ if(selectedId) url='index.html?companyId='+encodeURIComponent(selectedId);
+ window.location.href=url;
+}
+function showPicker(){
+ byId('pageTitle').textContent='Select a Company';
+ byId('intro').textContent='Choose the company profile you want to edit.';
+ byId('companyForm').classList.add('hidden');
+ var picker=byId('picker');
+ picker.classList.remove('hidden');
+ picker.textContent='';
+ if(!allCompanies.length){
+  var msg=document.createElement('p');
+  msg.textContent='No company was found in this browser. Open Company Selection to create or select a company.';
+  picker.appendChild(msg);
+  var link=document.createElement('a');
+  link.className='btn primary';link.href='company.html';link.textContent='Open Company Selection';
+  picker.appendChild(link);
+  return;
+ }
+ allCompanies.forEach(function(company){
+  var button=document.createElement('button');
+  button.type='button';button.className='choice';
+  button.textContent=(company.name||'Unnamed Company')+' — Edit details';
+  button.addEventListener('click',function(){loadCompany(company);});
+  picker.appendChild(button);
+ });
+}
+function loadCompany(company){
+ if(!company){showPicker();return;}
+ selectedId=companyId(company);
+ fields.forEach(function(field){var input=byId(field);if(input)input.value=company[field]===undefined||company[field]===null?'':String(company[field]);});
+ byId('pageTitle').textContent='Edit Company Details';
+ byId('intro').textContent='Update your company profile. Your company ID, stock items and voucher history will remain unchanged.';
+ byId('companyForm').classList.remove('hidden');
+ byId('picker').classList.add('hidden');
+ byId('backLink').href='index.html?companyId='+encodeURIComponent(selectedId);
+ byId('cancelLink').href='index.html?companyId='+encodeURIComponent(selectedId);
+ setStatus('');
+}
+try{
+ allCompanies=readCompanies();
+ var params=new URLSearchParams(window.location.search);
+ var requestedId=params.get('companyId');
+ var selected=requestedId?allCompanies.find(function(c){return companyId(c)===requestedId;}):null;
+ if(!selected&&allCompanies.length===1)selected=allCompanies[0];
+ if(selected)loadCompany(selected);else showPicker();
+}catch(error){
+ setStatus('The page encountered an error: '+(error&&error.message?error.message:'Unknown error'));
+}
+byId('companyForm').addEventListener('submit',function(event){
+ event.preventDefault();
+ setStatus('');
+ if(!selectedId){setStatus('Please select a company first.');return;}
+ var name=byId('name').value.trim();
+ if(!name){setStatus('Company name is required.');byId('name').focus();return;}
+ var email=byId('email').value.trim();
+ if(email&&!byId('email').checkValidity()){setStatus('Enter a valid email address or leave it blank.');byId('email').focus();return;}
+ var index=allCompanies.findIndex(function(c){return companyId(c)===selectedId;});
+ if(index<0){setStatus('Company record not found. Please select it again.');return;}
+ var updated=Object.assign({},allCompanies[index]);
+ fields.forEach(function(field){if(field==='name')updated[field]=name;else updated[field]=byId(field).value.trim();});
+ updated.gstin=String(updated.gstin||'').toUpperCase();
+ updated.pan=String(updated.pan||'').toUpperCase();
+ updated.updatedAt=new Date().toISOString();
+ allCompanies[index]=updated;
+ try{
+  window.localStorage.setItem(KEY,JSON.stringify(allCompanies));
+  window.location.href='index.html?companyId='+encodeURIComponent(selectedId);
+ }catch(error){
+  setStatus('Could not save changes. Please allow browser storage and try again.');
+ }
+});
 })();
-</script></body></html>
+</script>
+</body>
+</html>

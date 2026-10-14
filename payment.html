@@ -41,6 +41,7 @@ label{display:block;font-size:11px;font-weight:800;margin-bottom:8px;color:#3448
 input,select,textarea{width:100%;padding:13px 14px;border:1px solid #dce6de;border-radius:10px;background:#fbfdfb;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 4px rgba(20,116,81,.09)}
 textarea{min-height:88px;resize:vertical}
+.party-picker{display:flex;align-items:stretch;gap:8px}.party-picker select{min-width:0;flex:1}.add-party{width:45px;min-width:45px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--green);border:1px solid var(--green);color:#fff;text-decoration:none;font-size:24px;font-weight:500;line-height:1;box-shadow:0 5px 12px rgba(20,116,81,.14)}.add-party:hover{background:var(--deep);color:#fff}.field-hint{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
 .actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:20px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #dce6de;background:#fff;color:#34483d;text-decoration:none;border-radius:10px;padding:12px 17px;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
 .btn:hover{background:#f3f9f5;border-color:#c8ddce;transform:translateY(-1px)}
@@ -87,7 +88,7 @@ tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#f8fcf9}
 <div class="field"><label for="date">Payment Date *</label><input id="date" type="date" required></div>
 <div class="field"><label for="amount">Amount (₹) *</label><input id="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
 <div class="field"><label for="method">Payment Mode *</label><select id="method"><option>Cash</option><option>Bank Transfer</option><option>UPI</option><option>Cheque</option><option>Card</option><option>Other</option></select></div>
-<div class="field"><label for="party">Paid To / Account *</label><input id="party" maxlength="120" required placeholder="Supplier, person or account"></div>
+<div class="field"><label for="party">Paid To / Account *</label><div class="party-picker"><select id="party" required><option value="">Select party / account</option></select><a id="addParty" class="add-party" href="accounts.html" title="Open Accounts page" aria-label="Open Accounts page">＋</a></div><div id="partyHint" class="field-hint">Choose an account from your company account list.</div></div>
 <div class="field"><label for="ref">Reference / Cheque No.</label><input id="ref" maxlength="80" placeholder="Optional reference"></div>
 <div class="field full"><label for="note">Narration / Purpose</label><textarea id="note" maxlength="300" placeholder="What was this payment for?"></textarea></div>
 </div><div id="formMessage" class="msg" role="status" aria-live="polite"></div><div class="actions"><button type="reset" class="btn">Clear Form</button><button type="submit" class="btn primary">＋ Save Payment</button></div></form></section>
@@ -115,6 +116,21 @@ function getCompanies(){
   }
 }
 
+function getAccounts(c){
+  try{
+    const data=JSON.parse(localStorage.getItem('myStoreInventoryV1_'+c.id)||'{}');
+    return Array.isArray(data.accounts)?data.accounts.filter(a=>a&&a.id&&a.name):[];
+  }catch(e){return []}
+}
+function populatePartyList(){
+  const select=$('party');
+  const accounts=getAccounts(company);
+  const previous=select.value;
+  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+(a.group?' · '+esc(a.group):'')+'</option>').join('');
+  if(previous&&accounts.some(a=>String(a.name)===previous))select.value=previous;
+  $('partyHint').textContent=accounts.length?'Choose a saved customer, supplier or ledger account.':'No accounts found for this company. Tap + to open Accounts and add one.';
+  $('addParty').href='accounts.html?companyId='+encodeURIComponent(company.id);
+}
 function selectCompany(c){
   if(!c||!c.id) return;
   company=c;
@@ -129,6 +145,7 @@ function selectCompany(c){
   $('workspace').hidden=false;
   $('companyName').textContent=company.name||'Selected Company';
   $('printCompany').textContent=(company.name||'Company')+(company.address?' · '+company.address:'');
+  populatePartyList();
   $('back').href='index.html?companyId='+encodeURIComponent(company.id);
   $('brand').href=$('back').href;
   const logo=$('companyLogo');

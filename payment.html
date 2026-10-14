@@ -201,7 +201,8 @@ function updatePartyBalance(){
   $('partyBalanceValue').innerHTML=money(Math.abs(signed))+' <span class="drcr '+(side==='Cr'?'credit':'debit')+'">'+side+'</span>';
   box.hidden=false;
 }
-$('party').addEventListener('change',updatePartyBalance);\n$('party').addEventListener('focus',()=>{populatePartyList();updatePartyBalance()});
+$('party').addEventListener('change',updatePartyBalance);
+$('party').addEventListener('focus',()=>{populatePartyList();updatePartyBalance()});
 function selectCompany(c){
   if(!c||!c.id) return;
   company=c;

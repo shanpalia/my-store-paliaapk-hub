@@ -144,19 +144,41 @@ function updatePartyBalance(){
   const selected=$('party').value;
   const box=$('partyBalance');
   if(!selected||!company){box.hidden=true;return}
-  const account=getAccounts(company).find(a=>String(a.name).trim().toLowerCase()===selected.trim().toLowerCase());
+  const norm=s=>String(s||'').trim().toLowerCase();
+  const account=getAccounts(company).find(a=>norm(a.name)===norm(selected));
   if(!account){box.hidden=true;return}
+  // Signed ledger balance: Dr is positive, Cr is negative.
   let signed=(Number(account.openingBalance)||0)*((String(account.balanceType||'Dr').toUpperCase()==='CR')?-1:1);
+  const group=norm(account.group);
+  const isDebtor=group.includes('debtor');
+  const isCreditor=group.includes('creditor');
+  // Stock vouchers are stored in the company inventory ledger. Include each
+  // matching sale/purchase line so the party balance follows actual saved entries.
+  try{
+    const inventory=JSON.parse(localStorage.getItem('myStoreInventoryV1_'+company.id)||'{}');
+    const vouchers=Array.isArray(inventory.vouchers)?inventory.vouchers:[];
+    vouchers.filter(v=>v&&norm(v.party)===norm(selected)).forEach(v=>{
+      const amount=(Number(v.qty)||0)*(Number(v.rate)||0);
+      if(v.type==='OUT'&&isDebtor)signed+=amount;       // Credit sale increases receivable (Dr)
+      else if(v.type==='IN'&&isCreditor)signed-=amount; // Credit purchase increases payable (Cr)
+    });
+  }catch(e){}
+  // Cash/bank payment and receipt vouchers also affect the selected party ledger.
   try{
     const all=JSON.parse(localStorage.getItem(storageKey)||'[]');
-    if(Array.isArray(all))all.filter(r=>r&&String(r.party||'').trim().toLowerCase()===selected.trim().toLowerCase()).forEach(r=>{
+    if(Array.isArray(all))all.filter(r=>r&&norm(r.party)===norm(selected)).forEach(r=>{
       const amount=Number(r.amount)||0;
-      if(r.type==='PAYMENT')signed+=amount;
-      else if(r.type==='RECEIPT')signed-=amount;
+      if(r.type==='PAYMENT'){
+        if(isDebtor)signed-=amount;       // Paid to customer/debtor
+        else signed+=amount;              // Payment settles a creditor (Cr decreases)
+      }else if(r.type==='RECEIPT'){
+        if(isCreditor)signed+=amount;     // Receipt from supplier/creditor
+        else signed-=amount;              // Receipt settles a debtor (Dr decreases)
+      }
     });
   }catch(e){}
   const side=signed<0?'Cr':'Dr';
-  $('partyBalanceLabel').textContent='Current balance · '+account.name;
+  $('partyBalanceLabel').textContent='Current ledger balance · '+account.name;
   $('partyBalanceValue').innerHTML=money(Math.abs(signed))+' <span class="drcr '+(side==='Cr'?'credit':'debit')+'">'+side+'</span>';
   box.hidden=false;
 }

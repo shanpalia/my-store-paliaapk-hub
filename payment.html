@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#126b4f">
 <title>Payment Voucher | My Store By PaliaAPK HUB</title>
 <style>
+/* Fix White Screen / Hidden Elements */
+[hidden] { display: none !important; }
+
 :root{--green:#126b4f;--deep:#104b39;--mint:#eaf6ef;--ink:#192a23;--muted:#718076;--line:#e3e9e3;--bg:#f4f7f4;--red:#b0473e;--shadow:0 8px 28px rgba(23,59,42,.06}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}button,input,select,textarea{font:inherit}button,a{ -webkit-tap-highlight-color:transparent}a{color:var(--green)}.top{min-height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px clamp(14px,3vw,34px)}.brand{font-weight:850;color:var(--green);text-decoration:none;font-size:16px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1px;margin-top:4px}.top-right{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1px}.wrap{width:min(1180px,calc(100% - 28px));margin:26px auto 50px}.crumb{font-size:12px;margin-bottom:22px}.crumb a{text-decoration:none}.heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.eyebrow{font-size:10px;letter-spacing:1.6px;color:var(--green);font-weight:850}h1{font-size:clamp(25px,4vw,34px);letter-spacing:-1px;margin:7px 0}.sub{color:var(--muted);font-size:12px;line-height:1.7;margin:0}.company-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:11px;font-weight:750;max-width:300px}.company-pill img{width:28px;height:28px;object-fit:cover;border-radius:7px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0}.stat,.card{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);min-width:0}.stat{padding:18px}.stat small{display:block;color:var(--muted);font-size:10px;font-weight:750}.stat strong{display:block;font-size:clamp(19px,3vw,25px);margin-top:10px;letter-spacing:-.4px;overflow-wrap:anywhere}.card{padding:20px;margin-bottom:18px}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.card h2{font-size:15px;margin:0}.hint{color:var(--muted);font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:10px;font-weight:800;margin-bottom:7px}input,select,textarea{width:100%;padding:12px;border:1px solid #dce5dc;border-radius:9px;background:#fff;font-size:12px;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px #126b4f13}textarea{min-height:72px;resize:vertical}.actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:9px;margin-top:16px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:#fff;color:var(--ink);text-decoration:none;border-radius:9px;padding:11px 15px;font-size:11px;font-weight:800;cursor:pointer}.btn:hover{background:#f7faf7}.primary{background:var(--green);color:white;border-color:var(--green)}.primary:hover{background:var(--deep);color:white}.danger{color:var(--red)}.msg{font-size:11px;line-height:1.6;margin-top:10px;min-height:14px;color:var(--red)}.msg.ok{color:var(--green)}.tools{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}.tools input{max-width:330px}.table-wrap{overflow:auto;border:1px solid #edf1ed;border-radius:10px}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #edf1ed;font-size:11px}th{background:#f8fbf8;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.6px}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#fbfdfb}.tag{display:inline-block;padding:5px 8px;border-radius:30px;background:#fce9e7;color:var(--red);font-size:9px;font-weight:850}.empty{text-align:center;padding:34px 18px;color:var(--muted);font-size:12px;line-height:1.8}.company-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}.company-choice{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.company-choice:hover{border-color:var(--green);background:#fbfefb}.company-choice img{width:42px;height:42px;object-fit:cover;border-radius:10px;background:var(--mint)}.company-choice strong,.company-choice small{display:block}.company-choice strong{font-size:12px}.company-choice small{font-size:10px;color:var(--muted);margin-top:4px}.notice{background:#fff;border:1px solid var(--line);border-radius:15px;padding:clamp(20px,4vw,34px);box-shadow:var(--shadow)}.notice h1{font-size:26px}.footer{font-size:10px;color:#89948b;text-align:center;margin-top:26px}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{gap:9px}.stat{padding:14px}.heading{flex-direction:column}.company-pill{max-width:100%}}
@@ -47,20 +50,162 @@ let company=null,rows=[],storageKey='';
 const money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function today(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
-function getCompanies(){try{const data=JSON.parse(localStorage.getItem(COMPANIES_KEY)||'[]');return Array.isArray(data)?data.filter(c=>c&&c.id):[]}catch(e){return[]}}
-function selectCompany(c){if(!c||!c.id)return;company=c;storageKey='myStorePaymentReceiptsV1_'+company.id;try{const data=JSON.parse(localStorage.getItem(storageKey)||'[]');rows=Array.isArray(data)?data.filter(r=>r&&typeof r==='object'&&r.type==='PAYMENT'):[]}catch(e){rows=[]} $('companyChooser').hidden=true;$('workspace').hidden=false;$('companyName').textContent=company.name||'Selected Company';$('printCompany').textContent=(company.name||'Company')+(company.address?' · '+company.address:'');$('back').href='index.html?companyId='+encodeURIComponent(company.id);$('brand').href=$('back').href;const logo=$('companyLogo');if(company.logo){logo.src=company.logo;logo.hidden=false}else{logo.removeAttribute('src');logo.hidden=true}const u=new URL(location.href);u.searchParams.set('companyId',company.id);history.replaceState(null,'',u.pathname+u.search);render()}
-function showChooser(){const companies=getCompanies();$('companyChooser').hidden=false;$('workspace').hidden=true;const box=$('companyList');if(!companies.length){box.innerHTML='<div class="empty">No company is saved in this browser yet. Create a company profile first, then return to Payment Voucher.</div>';return}box.innerHTML=companies.map(c=>'<button type="button" class="company-choice" data-company="'+esc(c.id)+'">'+(c.logo?'<img src="'+esc(c.logo)+'" alt="">':'<span style="width:42px;height:42px;border-radius:10px;background:#eaf6ef;display:grid;place-items:center;color:#126b4f;font-size:20px">▤</span>')+'<span><strong>'+esc(c.name||'Company')+'</strong><small>'+esc(c.businessType||c.address||'Open company')+'</small></span></button>').join('');box.onclick=e=>{const b=e.target.closest('[data-company]');if(!b)return;const c=companies.find(x=>String(x.id)===b.dataset.company);selectCompany(c)}}
-function saveRows(){localStorage.setItem(storageKey,JSON.stringify(rows))}
-function render(){const payments=rows.reduce((sum,r)=>sum+(Number(r.amount)||0),0);$('totalPayment').textContent=money(payments);$('totalCount').textContent=String(rows.length);const sorted=rows.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));$('latestPayment').textContent=sorted.length?money(sorted[0].amount):'—';const q=$('search').value.trim().toLowerCase();const list=sorted.filter(r=>[r.voucherNo,r.date,r.party,r.ref,r.method,r.note].join(' ').toLowerCase().includes(q));$('table').innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Voucher No.</th><th>Date</th><th>Paid To / Account</th><th>Mode</th><th>Reference</th><th>Narration</th><th>Amount</th><th>Action</th></tr></thead><tbody>'+list.map(r=>'<tr><td><b>'+esc(r.voucherNo||'PV')+'</b></td><td>'+esc(r.date||'—')+'</td><td>'+esc(r.party||'—')+'</td><td>'+esc(r.method||'—')+'</td><td>'+esc(r.ref||'—')+'</td><td>'+esc(r.note||'—')+'</td><td><b>'+money(r.amount)+'</b></td><td><button type="button" class="btn danger" data-delete="'+esc(r.id)+'">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No payment entries found. Save a payment above to begin your register.</div>'}
+
+function getCompanies(){
+  try{
+    const data=JSON.parse(localStorage.getItem(COMPANIES_KEY)||'[]');
+    return Array.isArray(data)?data.filter(c=>c&&c.id):[];
+  }catch(e){
+    console.error("Local Storage access error:", e);
+    return [];
+  }
+}
+
+function selectCompany(c){
+  if(!c||!c.id) return;
+  company=c;
+  storageKey='myStorePaymentReceiptsV1_'+company.id;
+  try{
+    const data=JSON.parse(localStorage.getItem(storageKey)||'[]');
+    rows=Array.isArray(data)?data.filter(r=>r&&typeof r==='object'&&r.type==='PAYMENT'):[];
+  }catch(e){
+    rows=[];
+  }
+  $('companyChooser').hidden=true;
+  $('workspace').hidden=false;
+  $('companyName').textContent=company.name||'Selected Company';
+  $('printCompany').textContent=(company.name||'Company')+(company.address?' · '+company.address:'');
+  $('back').href='index.html?companyId='+encodeURIComponent(company.id);
+  $('brand').href=$('back').href;
+  const logo=$('companyLogo');
+  if(company.logo){logo.src=company.logo;logo.hidden=false}else{logo.removeAttribute('src');logo.hidden=true}
+  try{
+    const u=new URL(location.href);
+    u.searchParams.set('companyId',company.id);
+    history.replaceState(null,'',u.pathname+u.search);
+  }catch(e){}
+  render();
+}
+
+function showChooser(){
+  const companies=getCompanies();
+  $('companyChooser').hidden=false;
+  $('workspace').hidden=true;
+  const box=$('companyList');
+  if(!companies.length){
+    box.innerHTML='<div class="empty">No company is saved in this browser yet. Create a company profile first, then return to Payment Voucher.</div>';
+    return;
+  }
+  box.innerHTML=companies.map(c=>'<button type="button" class="company-choice" data-company="'+esc(c.id)+'">'+(c.logo?'<img src="'+esc(c.logo)+'" alt="">':'<span style="width:42px;height:42px;border-radius:10px;background:#eaf6ef;display:grid;place-items:center;color:#126b4f;font-size:20px">▤</span>')+'<span><strong>'+esc(c.name||'Company')+'</strong><small>'+esc(c.businessType||c.address||'Open company')+'</small></span></button>').join('');
+  box.onclick=e=>{
+    const b=e.target.closest('[data-company]');
+    if(!b)return;
+    const c=companies.find(x=>String(x.id)===b.dataset.company);
+    selectCompany(c);
+  };
+}
+
+function saveRows(){
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(rows));
+  }catch(e){
+    console.error("Failed to save data:", e);
+  }
+}
+
+function render(){
+  const payments=rows.reduce((sum,r)=>sum+(Number(r.amount)||0),0);
+  $('totalPayment').textContent=money(payments);
+  $('totalCount').textContent=String(rows.length);
+  const sorted=rows.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  $('latestPayment').textContent=sorted.length?money(sorted[0].amount):'—';
+  const q=$('search').value.trim().toLowerCase();
+  const list=sorted.filter(r=>[r.voucherNo,r.date,r.party,r.ref,r.method,r.note].join(' ').toLowerCase().includes(q));
+  $('table').innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Voucher No.</th><th>Date</th><th>Paid To / Account</th><th>Mode</th><th>Reference</th><th>Narration</th><th>Amount</th><th>Action</th></tr></thead><tbody>'+list.map(r=>'<tr><td><b>'+esc(r.voucherNo||'PV')+'</b></td><td>'+esc(r.date||'—')+'</td><td>'+esc(r.party||'—')+'</td><td>'+esc(r.method||'—')+'</td><td>'+esc(r.ref||'—')+'</td><td>'+esc(r.note||'—')+'</td><td><b>'+money(r.amount)+'</b></td><td><button type="button" class="btn danger" data-delete="'+esc(r.id)+'">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No payment entries found. Save a payment above to begin your register.</div>';
+}
+
 $('date').value=today();
-$('paymentForm').addEventListener('submit',function(e){e.preventDefault();if(!company){showChooser();return}const amount=Number($('amount').value),party=$('party').value.trim();if(!party||!Number.isFinite(amount)||amount<=0){$('formMessage').className='msg';$('formMessage').textContent='Enter a paid-to account and an amount greater than zero.';return}const count=rows.filter(r=>r.type==='PAYMENT').length+1;const row={id:'pay_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),voucherNo:'PV-'+String(count).padStart(5,'0'),type:'PAYMENT',date:$('date').value,amount:amount,method:$('method').value,party:party,ref:$('ref').value.trim(),note:$('note').value.trim(),createdAt:new Date().toISOString()};rows.push(row);try{saveRows();this.reset();$('date').value=today();$('formMessage').className='msg ok';$('formMessage').textContent='Payment saved successfully · '+row.voucherNo;render()}catch(err){rows.pop();$('formMessage').className='msg';$('formMessage').textContent='Could not save. Check browser storage space and try again.'}});
+$('paymentForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  if(!company){showChooser();return}
+  const amount=Number($('amount').value),party=$('party').value.trim();
+  if(!party||!Number.isFinite(amount)||amount<=0){
+    $('formMessage').className='msg';
+    $('formMessage').textContent='Enter a paid-to account and an amount greater than zero.';
+    return;
+  }
+  const count=rows.filter(r=>r.type==='PAYMENT').length+1;
+  const row={id:'pay_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),voucherNo:'PV-'+String(count).padStart(5,'0'),type:'PAYMENT',date:$('date').value,amount:amount,method:$('method').value,party:party,ref:$('ref').value.trim(),note:$('note').value.trim(),createdAt:new Date().toISOString()};
+  rows.push(row);
+  try{
+    saveRows();
+    this.reset();
+    $('date').value=today();
+    $('formMessage').className='msg ok';
+    $('formMessage').textContent='Payment saved successfully · '+row.voucherNo;
+    render();
+  }catch(err){
+    rows.pop();
+    $('formMessage').className='msg';
+    $('formMessage').textContent='Could not save. Check browser storage space and try again.';
+  }
+});
+
 $('paymentForm').addEventListener('reset',function(){setTimeout(()=>{if($('formMessage')){$('formMessage').textContent='';$('formMessage').className='msg'}},0)});
 $('search').addEventListener('input',render);
-$('table').addEventListener('click',function(e){const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Delete this payment entry?'))return;const old=rows;rows=rows.filter(r=>String(r.id)!==b.dataset.delete);try{saveRows();render()}catch(err){rows=old;alert('Could not delete this entry. Please try again.')}});
-$('export').addEventListener('click',function(){const data=[['Voucher No','Date','Paid To / Account','Mode','Reference','Narration','Amount'],...rows.map(r=>[r.voucherNo,r.date,r.party,r.method,r.ref,r.note,r.amount])];const csv='\ufeff'+data.map(row=>row.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='payment-register-'+String(company&&company.name||'company').replace(/[^a-z0-9_-]+/gi,'-')+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+$('table').addEventListener('click',function(e){
+  const b=e.target.closest('[data-delete]');
+  if(!b)return;
+  if(!confirm('Delete this payment entry?'))return;
+  const old=rows;
+  rows=rows.filter(r=>String(r.id)!==b.dataset.delete);
+  try{
+    saveRows();
+    render();
+  }catch(err){
+    rows=old;
+    alert('Could not delete this entry. Please try again.');
+  }
+});
+
+$('export').addEventListener('click',function(){
+  const data=[['Voucher No','Date','Paid To / Account','Mode','Reference','Narration','Amount'],...rows.map(r=>[r.voucherNo,r.date,r.party,r.method,r.ref,r.note,r.amount])];
+  const csv='\ufeff'+data.map(row=>row.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;
+  a.download='payment-register-'+String(company&&company.name||'company').replace(/[^a-z0-9_-]+/gi,'-')+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+
 $('print').addEventListener('click',()=>window.print());
-window.addEventListener('error',function(){const el=$('formMessage');if(el&&!el.textContent){el.textContent='A page script error occurred. Reload the page; your saved entries are not intentionally deleted.'}});
-const params=new URLSearchParams(location.search),requested=params.get('companyId'),companies=getCompanies();let chosen=requested?companies.find(c=>String(c.id)===String(requested)):null;if(!chosen&&companies.length===1)chosen=companies[0];if(chosen)selectCompany(chosen);else showChooser();
+
+window.addEventListener('error',function(){
+  const el=$('formMessage');
+  if(el&&!el.textContent){
+    el.textContent='A page script error occurred. Reload the page; your saved entries are not intentionally deleted.';
+  }
+});
+
+// Safe Page Initialization
+try {
+  const params=new URLSearchParams(location.search);
+  const requested=params.get('companyId');
+  const companies=getCompanies();
+  let chosen=requested?companies.find(c=>String(c.id)===String(requested)):null;
+  if(!chosen&&companies.length===1) chosen=companies[0];
+  
+  if(chosen) {
+    selectCompany(chosen);
+  } else {
+    showChooser();
+  }
+} catch(e) {
+  showChooser();
+}
+
 })();
 </script>
 </body>

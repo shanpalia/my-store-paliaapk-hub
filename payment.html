@@ -48,7 +48,7 @@ label{display:block;font-size:11px;font-weight:800;margin-bottom:8px;color:#3448
 input,select,textarea{width:100%;padding:13px 14px;border:1px solid #dce6de;border-radius:10px;background:#fbfdfb;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 4px rgba(20,116,81,.09)}
 textarea{min-height:88px;resize:vertical}
-.party-picker{display:flex;align-items:stretch;gap:8px}.party-picker select{min-width:0;flex:1}.add-party{width:45px;min-width:45px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--green);border:1px solid var(--green);color:#fff;text-decoration:none;font-size:24px;font-weight:500;line-height:1;box-shadow:0 5px 12px rgba(20,116,81,.14)}.add-party:hover{background:var(--deep);color:#fff}.field-hint{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
+.party-picker{display:flex;align-items:stretch;gap:8px}.party-picker select{min-width:0;flex:1}.add-party{width:45px;min-width:45px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--green);border:1px solid var(--green);color:#fff;text-decoration:none;font-size:24px;font-weight:500;line-height:1;box-shadow:0 5px 12px rgba(20,116,81,.14)}.add-party:hover{background:var(--deep);color:#fff}.field-hint{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}.party-balance{margin-top:10px;padding:11px 13px;border:1px solid #dce9df;border-radius:10px;background:#f7fcf8;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}.party-balance strong{font-size:14px;color:var(--green);white-space:nowrap}.party-balance .drcr{font-size:10px;font-weight:850;letter-spacing:.6px;margin-left:5px}.party-balance .credit{color:#a13b36}.party-balance .debit{color:var(--green)}
 .actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:20px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #dce6de;background:#fff;color:#34483d;text-decoration:none;border-radius:10px;padding:12px 17px;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
 .btn:hover{background:#f3f9f5;border-color:#c8ddce;transform:translateY(-1px)}
@@ -97,7 +97,7 @@ tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#f8fcf9}
 <div class="field"><label for="date">Payment Date *</label><input id="date" type="date" required></div>
 <div class="field"><label for="amount">Amount (₹) *</label><input id="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
 <div class="field"><label for="method">Payment Mode *</label><select id="method"><option>Cash</option><option>Bank Transfer</option><option>UPI</option><option>Cheque</option><option>Card</option><option>Other</option></select></div>
-<div class="field"><label for="party">Paid To / Account *</label><div class="party-picker"><select id="party" required><option value="">Select party / account</option></select><a id="addParty" class="add-party" href="accounts.html" title="Open Accounts page" aria-label="Open Accounts page">＋</a></div><div id="partyHint" class="field-hint">Choose an account from your company account list.</div></div>
+<div class="field"><label for="party">Paid To / Account *</label><div class="party-picker"><select id="party" required><option value="">Select party / account</option></select><a id="addParty" class="add-party" href="accounts.html" title="Open Accounts page" aria-label="Open Accounts page">＋</a></div><div id="partyHint" class="field-hint">Choose an account from your company account list.</div><div id="partyBalance" class="party-balance" hidden aria-live="polite"><span id="partyBalanceLabel">Current balance</span><strong id="partyBalanceValue">₹0.00 <span class="drcr">Dr</span></strong></div></div>
 <div class="field"><label for="ref">Reference / Cheque No.</label><input id="ref" maxlength="80" placeholder="Optional reference"></div>
 <div class="field full"><label for="note">Narration / Purpose</label><textarea id="note" maxlength="300" placeholder="What was this payment for?"></textarea></div>
 </div><div id="formMessage" class="msg" role="status" aria-live="polite"></div><div class="actions"><button type="reset" class="btn">Clear Form</button><button type="submit" class="btn primary">＋ Save Payment</button></div></form></section>
@@ -135,11 +135,32 @@ function populatePartyList(){
   const select=$('party');
   const accounts=getAccounts(company);
   const previous=select.value;
-  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+(a.group?' · '+esc(a.group):'')+'</option>').join('');
+  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'</option>').join('');
   if(previous&&accounts.some(a=>String(a.name)===previous))select.value=previous;
   $('partyHint').textContent=accounts.length?'Choose a saved customer, supplier or ledger account.':'No accounts found for this company. Tap + to open Accounts and add one.';
   $('addParty').href='accounts.html?companyId='+encodeURIComponent(company.id);
 }
+function updatePartyBalance(){
+  const selected=$('party').value;
+  const box=$('partyBalance');
+  if(!selected||!company){box.hidden=true;return}
+  const account=getAccounts(company).find(a=>String(a.name).trim().toLowerCase()===selected.trim().toLowerCase());
+  if(!account){box.hidden=true;return}
+  let signed=(Number(account.openingBalance)||0)*((String(account.balanceType||'Dr').toUpperCase()==='CR')?-1:1);
+  try{
+    const all=JSON.parse(localStorage.getItem(storageKey)||'[]');
+    if(Array.isArray(all))all.filter(r=>r&&String(r.party||'').trim().toLowerCase()===selected.trim().toLowerCase()).forEach(r=>{
+      const amount=Number(r.amount)||0;
+      if(r.type==='PAYMENT')signed+=amount;
+      else if(r.type==='RECEIPT')signed-=amount;
+    });
+  }catch(e){}
+  const side=signed<0?'Cr':'Dr';
+  $('partyBalanceLabel').textContent='Current balance · '+account.name;
+  $('partyBalanceValue').innerHTML=money(Math.abs(signed))+' <span class="drcr '+(side==='Cr'?'credit':'debit')+'">'+side+'</span>';
+  box.hidden=false;
+}
+$('party').addEventListener('change',updatePartyBalance);
 function selectCompany(c){
   if(!c||!c.id) return;
   company=c;
@@ -155,6 +176,7 @@ function selectCompany(c){
   $('companyName').textContent=company.name||'Selected Company';
   $('printCompany').textContent=(company.name||'Company')+(company.address?' · '+company.address:'');
   populatePartyList();
+  updatePartyBalance();
   $('back').href='index.html?companyId='+encodeURIComponent(company.id);
   $('brand').href=$('back').href;
   document.querySelectorAll('[data-side-link]').forEach(a=>{const target=a.dataset.sideLink; a.href=target+(target.includes('?')?'&':'?')+'companyId='+encodeURIComponent(company.id)});
@@ -225,6 +247,7 @@ $('paymentForm').addEventListener('submit',function(e){
     $('formMessage').className='msg ok';
     $('formMessage').textContent='Payment saved successfully · '+row.voucherNo;
     render();
+    updatePartyBalance();
   }catch(err){
     rows.pop();
     $('formMessage').className='msg';

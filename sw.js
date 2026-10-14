@@ -1,9 +1,9 @@
-const CACHE_NAME='palia-store-offline-v2';
+const CACHE_NAME='palia-store-offline-v3';
 const APP_FILES=[
  './','./index.html','./sale.html','./purchase.html','./accounts.html','./items.html',
  './payment.html','./payment-receipt.html','./balance.html','./vouchers.html','./reports.html',
  './company-edit.html','./add-account.html','./add-item.html','./purregister.html',
- './page.js','./page.css','./script.js'
+ './page.js','./page.css','./script.js','./manifest.json','./app-icon.svg'
 ];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{

@@ -143,13 +143,50 @@ function getAccounts(c){
     return Array.isArray(data.accounts)?data.accounts.filter(a=>a&&a.id&&a.name):[];
   }catch(e){return []}
 }
+function getPartyBalance(account){
+  const norm=s=>String(s||'').trim().toLowerCase();
+  const selected=String(account.name||'');
+  let signed=(Number(account.openingBalance)||0)*((String(account.balanceType||'Dr').toUpperCase()==='CR')?-1:1);
+  const group=norm(account.group);
+  const isDebtor=group.includes('debtor');
+  const isCreditor=group.includes('creditor');
+  // Include saved purchase/sale stock vouchers associated with this party.
+  try{
+    const inventory=JSON.parse(localStorage.getItem('myStoreInventoryV1_'+company.id)||'{}');
+    const vouchers=Array.isArray(inventory.vouchers)?inventory.vouchers:[];
+    vouchers.filter(v=>v&&norm(v.party)===norm(selected)).forEach(v=>{
+      const amount=(Number(v.qty)||0)*(Number(v.rate)||0);
+      if(v.type==='OUT'&&isDebtor)signed+=amount;
+      else if(v.type==='IN'&&isCreditor)signed-=amount;
+    });
+  }catch(e){}
+  // Include cash/bank payment and receipt entries saved for this company.
+  try{
+    const all=JSON.parse(localStorage.getItem(storageKey)||'[]');
+    if(Array.isArray(all))all.filter(r=>r&&norm(r.party)===norm(selected)).forEach(r=>{
+      const amount=Number(r.amount)||0;
+      if(r.type==='PAYMENT'){
+        if(isDebtor)signed-=amount;
+        else signed+=amount;
+      }else if(r.type==='RECEIPT'){
+        if(isCreditor)signed+=amount;
+        else signed-=amount;
+      }
+    });
+  }catch(e){}
+  return signed;
+}
+function balanceLabel(account){
+  const signed=getPartyBalance(account),side=signed<0?'Cr':'Dr';
+  return money(Math.abs(signed))+' '+side;
+}
 function populatePartyList(){
   const select=$('party');
   const accounts=getAccounts(company);
   const previous=select.value;
-  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'</option>').join('');
+  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'  —  '+esc(balanceLabel(a))+'</option>').join('');
   if(previous&&accounts.some(a=>String(a.name)===previous))select.value=previous;
-  $('partyHint').textContent=accounts.length?'Choose a saved customer, supplier or ledger account.':'No accounts found for this company. Tap + to open Accounts and add one.';
+  $('partyHint').textContent=accounts.length?'Party list mein current ledger balance Dr/Cr ke saath dikhaya gaya hai.':'No accounts found for this company. Tap + to open Accounts and add one.';
   $('addParty').href='accounts.html?companyId='+encodeURIComponent(company.id);
 }
 function updatePartyBalance(){
@@ -159,37 +196,7 @@ function updatePartyBalance(){
   const norm=s=>String(s||'').trim().toLowerCase();
   const account=getAccounts(company).find(a=>norm(a.name)===norm(selected));
   if(!account){box.hidden=true;return}
-  // Signed ledger balance: Dr is positive, Cr is negative.
-  let signed=(Number(account.openingBalance)||0)*((String(account.balanceType||'Dr').toUpperCase()==='CR')?-1:1);
-  const group=norm(account.group);
-  const isDebtor=group.includes('debtor');
-  const isCreditor=group.includes('creditor');
-  // Stock vouchers are stored in the company inventory ledger. Include each
-  // matching sale/purchase line so the party balance follows actual saved entries.
-  try{
-    const inventory=JSON.parse(localStorage.getItem('myStoreInventoryV1_'+company.id)||'{}');
-    const vouchers=Array.isArray(inventory.vouchers)?inventory.vouchers:[];
-    vouchers.filter(v=>v&&norm(v.party)===norm(selected)).forEach(v=>{
-      const amount=(Number(v.qty)||0)*(Number(v.rate)||0);
-      if(v.type==='OUT'&&isDebtor)signed+=amount;       // Credit sale increases receivable (Dr)
-      else if(v.type==='IN'&&isCreditor)signed-=amount; // Credit purchase increases payable (Cr)
-    });
-  }catch(e){}
-  // Cash/bank payment and receipt vouchers also affect the selected party ledger.
-  try{
-    const all=JSON.parse(localStorage.getItem(storageKey)||'[]');
-    if(Array.isArray(all))all.filter(r=>r&&norm(r.party)===norm(selected)).forEach(r=>{
-      const amount=Number(r.amount)||0;
-      if(r.type==='PAYMENT'){
-        if(isDebtor)signed-=amount;       // Paid to customer/debtor
-        else signed+=amount;              // Payment settles a creditor (Cr decreases)
-      }else if(r.type==='RECEIPT'){
-        if(isCreditor)signed+=amount;     // Receipt from supplier/creditor
-        else signed-=amount;              // Receipt settles a debtor (Dr decreases)
-      }
-    });
-  }catch(e){}
-  const side=signed<0?'Cr':'Dr';
+  const signed=getPartyBalance(account),side=signed<0?'Cr':'Dr';
   $('partyBalanceLabel').textContent='Current ledger balance · '+account.name;
   $('partyBalanceValue').innerHTML=money(Math.abs(signed))+' <span class="drcr '+(side==='Cr'?'credit':'debit')+'">'+side+'</span>';
   box.hidden=false;

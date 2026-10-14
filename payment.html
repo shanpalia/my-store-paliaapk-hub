@@ -48,7 +48,7 @@ label{display:block;font-size:11px;font-weight:800;margin-bottom:8px;color:#3448
 input,select,textarea{width:100%;padding:13px 14px;border:1px solid #dce6de;border-radius:10px;background:#fbfdfb;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 4px rgba(20,116,81,.09)}
 textarea{min-height:88px;resize:vertical}
-.party-picker{display:flex;align-items:stretch;gap:8px}.party-picker select{min-width:0;flex:1}.add-party{width:45px;min-width:45px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--green);border:1px solid var(--green);color:#fff;text-decoration:none;font-size:24px;font-weight:500;line-height:1;box-shadow:0 5px 12px rgba(20,116,81,.14)}.add-party:hover{background:var(--deep);color:#fff}.field-hint{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}.party-balance{margin-top:10px;padding:11px 13px;border:1px solid #dce9df;border-radius:10px;background:#f7fcf8;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}.party-balance strong{font-size:14px;color:var(--green);white-space:nowrap}.party-balance .drcr{font-size:10px;font-weight:850;letter-spacing:.6px;margin-left:5px}.party-balance .credit{color:#a13b36}.party-balance .debit{color:var(--green)}
+.party-picker{display:flex;align-items:stretch;gap:8px}.party-picker select{min-width:0;flex:1}.add-party{width:45px;min-width:45px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--green);border:1px solid var(--green);color:#fff;text-decoration:none;font-size:24px;font-weight:500;line-height:1;box-shadow:0 5px 12px rgba(20,116,81,.14)}.add-party:hover{background:var(--deep);color:#fff}.field-hint{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}.party-balance{margin-top:10px;padding:14px 15px;border:1px solid #9bcdb0;border-left:4px solid var(--green);border-radius:10px;background:#effaf2;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;box-shadow:0 3px 10px rgba(20,65,43,.05)}.party-balance strong{font-size:14px;color:var(--green);white-space:nowrap}.party-balance .drcr{font-size:10px;font-weight:850;letter-spacing:.6px;margin-left:5px}.party-balance .credit{color:#a13b36}.party-balance .debit{color:var(--green)}
 .actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:20px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #dce6de;background:#fff;color:#34483d;text-decoration:none;border-radius:10px;padding:12px 17px;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
 .btn:hover{background:#f3f9f5;border-color:#c8ddce;transform:translateY(-1px)}
@@ -197,11 +197,11 @@ function updatePartyBalance(){
   const account=getAccounts(company).find(a=>norm(a.name)===norm(selected));
   if(!account){box.hidden=true;return}
   const signed=getPartyBalance(account),side=signed<0?'Cr':'Dr';
-  $('partyBalanceLabel').textContent='Current ledger balance · '+account.name;
+  $('partyBalanceLabel').textContent='Selected Party · Current Ledger Balance · '+account.name;
   $('partyBalanceValue').innerHTML=money(Math.abs(signed))+' <span class="drcr '+(side==='Cr'?'credit':'debit')+'">'+side+'</span>';
   box.hidden=false;
 }
-$('party').addEventListener('change',updatePartyBalance);
+$('party').addEventListener('change',updatePartyBalance);\n$('party').addEventListener('focus',()=>{populatePartyList();updatePartyBalance()});
 function selectCompany(c){
   if(!c||!c.id) return;
   company=c;

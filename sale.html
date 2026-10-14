@@ -15,10 +15,10 @@
 <a class="nav" data-page-link="company" data-link="company-edit.html" href="company-edit.html"><span>⌂</span>Company</a>
 <a class="nav" data-page-link="accounts" data-link="accounts.html" href="accounts.html"><span>₹</span>Accounts</a>
 <a class="nav" data-page-link="items" data-link="items.html" href="items.html"><span>▤</span>Items</a>
-<a class="nav" data-page-link="sale" data-link="sale.html" href="sale.html"><span>↓</span>Sale</a>
+<a class="nav" data-page-link="sale" data-link="sale.html?voucher=1" href="sale.html?voucher=1"><span>↓</span>Sale</a>
 <a class="nav" data-page-link="payment" data-link="payment.html" href="payment.html"><span>↗</span>Payment</a>
 <a class="nav" data-page-link="receipt" data-link="balance.html" href="balance.html"><span>↙</span>Receipt</a>
-<a class="nav" data-page-link="sale" data-link="sale.html" href="sale.html"><span>↑</span>Sale</a>
+<a class="nav" data-page-link="sale" data-link="sale.html?voucher=1" href="sale.html?voucher=1"><span>↑</span>Sale</a>
 <a class="nav" data-page-link="balance" data-link="balance.html" href="balance.html"><span>≡</span>Balance</a>
 <a class="nav" data-page-link="vouchers" data-link="vouchers.html" href="vouchers.html"><span>⇄</span>Vouchers</a>
 <a class="nav" data-page-link="reports" data-link="reports.html" href="reports.html"><span>▥</span>Reports</a></aside><main id="pageContent"><div class="panel"><div class="empty">Loading sale data…</div></div></main></div>
@@ -108,7 +108,7 @@ function saveSaleDraft(row){const form=$('saleForm');if(!form)return false;const
 function quickAddAccount(){if(!saveSaleDraft(null))return;location.href='add-account.html?companyId='+encodeURIComponent(company.id)+'&returnTo=sale'}
 function quickAddItem(row){if(!saveSaleDraft(row))return;const index=[...$('saleLineRows').children].indexOf(row);location.href='add-item.html?companyId='+encodeURIComponent(company.id)+'&returnTo=sale&returnRow='+Math.max(0,index)}
 function exportCSV(){const rows=[['Date','Voucher No','Item','Customer','Quantity','Unit','Rate','Amount','Narration'],...data.vouchers.filter(v=>v.type==='OUT').map(v=>[v.date,v.voucherNo,v.itemName,v.party,v.qty,v.unit,v.rate,num(v.qty)*num(v.rate),v.note])];const blob=new Blob(['\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sale-register.csv';a.click();URL.revokeObjectURL(url)}
-render();const draftKey='myStoreSaleDraft_'+company.id;if(params.get('returnTo')==='sale'){let draft=null;try{draft=JSON.parse(sessionStorage.getItem(draftKey)||'null')}catch{}try{sessionStorage.removeItem(draftKey)}catch{}if(draft){showForm(draft.editId||null,draft)}else if(params.get('addedItemId')||params.get('addedAccountId')){showForm()}if(params.get('addedItemId')){const rows=$('saleLineRows');if(rows){const index=Math.max(0,Number(params.get('returnRow')||0));while(rows.children.length<=index)$('addSaleLine').click();const sel=rows.children[index].querySelector('.line-item');if(sel){sel.value=params.get('addedItemId');sel.dispatchEvent(new Event('change',{bubbles:true}))}}}const aid=params.get('addedAccountId'),acc=data.accounts.find(a=>String(a.id)===aid);if(acc&&$('saleParty'))$('saleParty').value=acc.name}
+render();if(params.get('voucher')==='1')showForm();const draftKey='myStoreSaleDraft_'+company.id;if(params.get('returnTo')==='sale'){let draft=null;try{draft=JSON.parse(sessionStorage.getItem(draftKey)||'null')}catch{}try{sessionStorage.removeItem(draftKey)}catch{}if(draft){showForm(draft.editId||null,draft)}else if(params.get('addedItemId')||params.get('addedAccountId')){showForm()}if(params.get('addedItemId')){const rows=$('saleLineRows');if(rows){const index=Math.max(0,Number(params.get('returnRow')||0));while(rows.children.length<=index)$('addSaleLine').click();const sel=rows.children[index].querySelector('.line-item');if(sel){sel.value=params.get('addedItemId');sel.dispatchEvent(new Event('change',{bubbles:true}))}}}const aid=params.get('addedAccountId'),acc=data.accounts.find(a=>String(a.id)===aid);if(acc&&$('saleParty'))$('saleParty').value=acc.name}
 })();
 </script>
 </body></html>

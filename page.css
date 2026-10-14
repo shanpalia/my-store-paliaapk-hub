@@ -2,3 +2,19 @@
 /* Sidebar icons are part of their menu links; icon and label clicks navigate together. */
 .nav .nav-icon,.nav span,.nav-btn .nav-icon{pointer-events:none;flex-shrink:0}
 .nav,.nav-btn{cursor:pointer}
+
+/* Tally-inspired accounting UI shared by all voucher, ledger and report pages */
+:root{--green:#075e55;--mint:#e1f1ee;--ink:#172b2a;--muted:#647675;--line:#cbd8d6;--bg:#eef3f2}
+body{background:#eef2f1;color:#172b2a}
+.topbar{background:#075e55;color:#fff;border-bottom:2px solid #063f3a}
+.topbar .brand strong,.topbar .brand small,.topbar .company{color:#fff}
+.logo{background:#fff;color:#075e55;border-radius:4px}
+aside{background:#e4ebea;border-right-color:#bccbc8}
+.caption{color:#55706c}.nav{border-radius:3px;color:#314b48;padding:10px 11px}.nav:hover,.nav.active{background:#075e55;color:#fff}
+.heading{margin-bottom:16px}.heading h1{font-size:26px;letter-spacing:0}
+.panel,.card,.stat{border-radius:4px;box-shadow:none;border-color:#cbd8d6}
+.panel-head{background:#e4edeb;border-bottom-color:#cbd8d6}
+th{background:#dce8e6;color:#244744}th,td{padding:10px 13px}
+.btn{border-radius:3px}.btn.primary{background:#075e55;border-color:#075e55}
+input,select,textarea{border-radius:3px!important}
+.foot,footer{background:#e4ebea;border-color:#cbd8d6;color:#526c68}

@@ -18,6 +18,13 @@ a{color:var(--green)}
 .brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1.5px;margin-top:5px}
 .top-right{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1.3px}
 .wrap{width:min(1160px,calc(100% - 40px));margin:30px auto 54px}
+.payment-sidebar{position:fixed;z-index:5;top:76px;bottom:0;left:0;width:220px;overflow-y:auto;background:#fff;border-right:1px solid var(--line);padding:20px 12px}
+.payment-menu-caption{font-size:9px;letter-spacing:1.6px;color:#8a968d;font-weight:800;padding:8px 12px 13px}
+.payment-sidebar a{display:flex;align-items:center;gap:11px;text-decoration:none;color:#657369;padding:12px;border-radius:9px;margin:2px 0;font-size:12px;font-weight:650}
+.payment-sidebar a span{width:22px;text-align:center;font-size:16px}
+.payment-sidebar a:hover,.payment-sidebar a.active{background:var(--mint);color:var(--green)}
+.wrap{margin-left:calc(220px + max(20px, (100vw - 220px - 1160px)/2));width:min(1160px,calc(100% - 260px))}
+
 .crumb{font-size:12px;color:var(--muted);margin-bottom:26px}.crumb a{text-decoration:none;font-weight:700}
 .heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 28px;background:linear-gradient(120deg,#fff 0%,#f1faf4 100%);border:1px solid var(--line);border-radius:20px}
 .eyebrow{font-size:10px;letter-spacing:1.7px;color:var(--green);font-weight:850}
@@ -67,13 +74,15 @@ tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#f8fcf9}
 .notice{background:#fff;border:1px solid var(--line);border-radius:20px;padding:clamp(24px,4vw,42px);box-shadow:var(--shadow)}
 .notice h1{font-size:30px}.footer{font-size:11px;color:#89978e;text-align:center;margin-top:30px}
 .print-title{display:none}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.heading{align-items:flex-start;flex-direction:column}.company-pill{max-width:100%}}
+@media(max-width:900px){.payment-sidebar{position:static;width:100%;display:flex;gap:4px;overflow-x:auto;white-space:nowrap;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line)}.payment-menu-caption{display:none}.payment-sidebar a{flex:0 0 auto;padding:10px}.wrap{width:calc(100% - 28px);margin:18px auto 40px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.heading{align-items:flex-start;flex-direction:column}.company-pill{max-width:100%}}
 @media(max-width:560px){.top{min-height:66px;padding:12px 17px}.top-right{display:none}.wrap{width:calc(100% - 24px);margin:18px auto 32px}.crumb{margin-bottom:16px}.heading{padding:21px 18px;border-radius:15px}h1{font-size:28px}.stats{grid-template-columns:1fr;gap:10px;margin:13px 0}.stat{padding:16px 18px}.stat strong{font-size:24px;margin-top:7px}.card{padding:18px 15px;border-radius:14px}.grid{grid-template-columns:1fr;gap:15px}.field.full{grid-column:auto}.tools{align-items:stretch;flex-direction:column;gap:12px}.tools input{max-width:none}.actions{gap:8px}.actions .btn{flex:1;padding:12px 10px}.company-list{grid-template-columns:1fr}}
 @media print{body{background:#fff}.top,.crumb,.heading,.stats,.entry-card,.tools,.actions,.footer{display:none!important}.wrap{width:100%;margin:0}.card{box-shadow:none;border:0;padding:0}.table-wrap{overflow:visible;border:0}table{white-space:normal}th,td{font-size:9px;padding:7px}.print-title{display:block!important}}
 </style>
 </head>
 <body>
 <header class="top"><a class="brand" id="brand" href="index.html">My Store<small>BY PALIAAPK HUB</small></a><div class="top-right">ACCOUNTS · CASH / BANK</div></header>
+<aside class="payment-sidebar" aria-label="Workspace menu"><div class="payment-menu-caption">WORKSPACE MENU</div>
+<a data-side-link="index.html" href="index.html"><span>▦</span>Dashboard</a><a data-side-link="company-edit.html" href="company-edit.html"><span>⌂</span>Company</a><a data-side-link="accounts.html" href="accounts.html"><span>₹</span>Accounts</a><a data-side-link="items.html" href="items.html"><span>▤</span>Items</a><a data-side-link="purchase.html" href="purchase.html"><span>↓</span>Purchase</a><a class="active" data-side-link="payment.html" href="payment.html"><span>↗</span>Payment</a><a data-side-link="payment-receipt.html?type=RECEIPT" href="payment-receipt.html?type=RECEIPT"><span>↙</span>Receipt</a><a data-side-link="sale.html" href="sale.html"><span>↑</span>Sale</a><a data-side-link="balance.html" href="balance.html"><span>≡</span>Balance</a><a data-side-link="vouchers.html" href="vouchers.html"><span>⇄</span>Vouchers</a><a data-side-link="reports.html" href="reports.html"><span>▥</span>Reports</a></aside>
 <main class="wrap">
 <div class="crumb"><a id="back" href="index.html">← Dashboard</a> <span aria-hidden="true">/</span> Payment Voucher</div>
 <section id="companyChooser" class="notice" hidden>
@@ -148,6 +157,7 @@ function selectCompany(c){
   populatePartyList();
   $('back').href='index.html?companyId='+encodeURIComponent(company.id);
   $('brand').href=$('back').href;
+  document.querySelectorAll('[data-side-link]').forEach(a=>{const target=a.dataset.sideLink; a.href=target+(target.includes('?')?'&':'?')+'companyId='+encodeURIComponent(company.id)});
   const logo=$('companyLogo');
   if(company.logo){logo.src=company.logo;logo.hidden=false}else{logo.removeAttribute('src');logo.hidden=true}
   try{

@@ -1,4 +1,4 @@
-const CACHE_NAME='palia-store-offline-v3';
+const CACHE_NAME='palia-store-offline-v4';
 const APP_FILES=[
  './','./index.html','./sale.html','./purchase.html','./accounts.html','./items.html',
  './payment.html','./payment-receipt.html','./balance.html','./vouchers.html','./reports.html',
@@ -24,15 +24,25 @@ self.addEventListener('fetch',event=>{
  const url=new URL(req.url);if(url.origin!==self.location.origin)return;
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE_NAME);
+  const isPage=req.mode==='navigate'||/\\.html?$/i.test(url.pathname);
+  // Always check the network first for HTML so GitHub Pages updates appear without manual refresh.
+  if(isPage){
+   try{
+    const response=await fetch(req,{cache:'no-cache'});
+    if(response.ok&&response.type==='basic')await cache.put(req,response.clone());
+    return response;
+   }catch(e){
+    const cached=await cache.match(req,{ignoreSearch:false})||await cache.match(url.pathname.endsWith('/')?'./index.html':'./'+url.pathname.split('/').pop());
+    if(cached)return cached;
+    return new Response('Offline: please open the app once while connected to the internet.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+   }
+  }
   const cached=await cache.match(req,{ignoreSearch:false})||await cache.match(url.pathname.endsWith('/')?'./index.html':'./'+url.pathname.split('/').pop());
   if(cached)return cached;
   try{
    const response=await fetch(req);
    if(response.ok&&response.type==='basic')await cache.put(req,response.clone());
    return response;
-  }catch(e){
-   if(req.mode==='navigate')return (await cache.match('./index.html'))||new Response('Offline: please open the app once while connected to the internet.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
-   return new Response('',{status:503});
-  }
+  }catch(e){return new Response('',{status:503});}
  })());
 });

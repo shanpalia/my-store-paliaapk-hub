@@ -184,7 +184,7 @@ function populatePartyList(){
   const select=$('party');
   const accounts=getAccounts(company);
   const previous=select.value;
-  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'  —  '+esc(balanceLabel(a))+'</option>').join('');
+  select.innerHTML='<option value="">Select party / account</option>'+accounts.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'</option>').join('');
   if(previous&&accounts.some(a=>String(a.name)===previous))select.value=previous;
   $('partyHint').textContent=accounts.length?'Party list mein current ledger balance Dr/Cr ke saath dikhaya gaya hai.':'No accounts found for this company. Tap + to open Accounts and add one.';
   $('addParty').href='accounts.html?companyId='+encodeURIComponent(company.id);
@@ -270,7 +270,18 @@ function render(){
   $('table').innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Voucher No.</th><th>Date</th><th>Paid To / Account</th><th>Mode</th><th>Reference</th><th>Narration</th><th>Amount</th><th>Action</th></tr></thead><tbody>'+list.map(r=>'<tr><td><b>'+esc(r.voucherNo||'PV')+'</b></td><td>'+esc(r.date||'—')+'</td><td>'+esc(r.party||'—')+'</td><td>'+esc(r.method||'—')+'</td><td>'+esc(r.ref||'—')+'</td><td>'+esc(r.note||'—')+'</td><td><b>'+money(r.amount)+'</b></td><td><button type="button" class="btn danger" data-delete="'+esc(r.id)+'">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No payment entries found. Save a payment above to begin your register.</div>';
 }
 
-$('date').value=today();
+$('date').value='';
+function formatDateField(){
+  const raw=$('date').value.trim();
+  if(!raw)return true;
+  const iso=parseDate(raw);
+  if(!iso){$('formMessage').className='msg';$('formMessage').textContent='Valid date daalein, jaise 1.10.26.';return false;}
+  $('date').value=displayDate(iso);
+  $('formMessage').textContent='';$('formMessage').className='msg';
+  return true;
+}
+$('date').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(formatDateField())$('amount').focus();}});
+$('date').addEventListener('blur',formatDateField);
 $('paymentForm').addEventListener('submit',function(e){
   e.preventDefault();
   if(!company){showChooser();return}
@@ -287,7 +298,7 @@ $('paymentForm').addEventListener('submit',function(e){
   try{
     saveRows();
     this.reset();
-    $('date').value=displayDate(today());
+    $('date').value='';
     $('paymentRegister').hidden=true;
     $('formMessage').className='msg ok';
     $('formMessage').textContent='Payment saved successfully · '+row.voucherNo;

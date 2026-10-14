@@ -95,7 +95,7 @@ tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#f8fcf9}
 <div class="stats"><div class="stat"><small>Total Payments</small><strong id="totalPayment">₹0.00</strong></div><div class="stat"><small>Transactions</small><strong id="totalCount">0</strong></div><div class="stat"><small>Latest Payment</small><strong id="latestPayment">—</strong></div></div>
 <section class="card entry-card"><div class="card-head"><div><h2>New payment</h2><div class="hint">Fields marked * are required.</div></div></div>
 <form id="paymentForm"><div class="grid">
-<div class="field"><label for="date">Payment Date *</label><input id="date" type="date" required></div>
+<div class="field"><label for="date">Payment Date *</label><input id="date" type="text" inputmode="numeric" autocomplete="off" placeholder="DD-MM-YYYY (e.g. 1.10.26)" maxlength="10" required></div>
 <div class="field"><label for="amount">Amount (₹) *</label><input id="amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
 <div class="field"><label for="method">Payment Mode *</label><select id="method"><option>Cash</option><option>Bank Transfer</option><option>UPI</option><option>Cheque</option><option>Card</option><option>Other</option></select></div>
 <div class="field"><label for="party">Paid To / Account *</label><div class="party-picker"><select id="party" required><option value="">Select party / account</option></select><a id="addParty" class="add-party" href="accounts.html" title="Open Accounts page" aria-label="Open Accounts page">＋</a></div><div id="partyHint" class="field-hint">Choose an account from your company account list.</div><div id="partyBalance" class="party-balance" hidden aria-live="polite"><span id="partyBalanceLabel">Current balance</span><strong id="partyBalanceValue">₹0.00 <span class="drcr">Dr</span></strong></div></div>
@@ -115,6 +115,17 @@ let company=null,rows=[],storageKey='';
 const money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function today(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function displayDate(iso){const m=String(iso||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);return m?m[3]+'-'+m[2]+'-'+m[1]:String(iso||'')}
+function parseDate(value){
+  const s=String(value||'').trim();
+  let m=s.match(/^(\\d{1,2})[.\\-/](\\d{1,2})[.\\-/](\\d{2}|\\d{4})$/);
+  if(!m)return null;
+  const day=Number(m[1]),month=Number(m[2]);let year=Number(m[3]);
+  if(m[3].length===2)year+=year<=49?2000:1900;
+  const d=new Date(year,month-1,day);
+  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
+  return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+}
 
 function getCompanies(){
   try{
@@ -211,6 +222,8 @@ function selectCompany(c){
     history.replaceState(null,'',u.pathname+u.search);
   }catch(e){}
   render();
+  $('paymentRegister').hidden=true;
+  setTimeout(()=>$('date').focus(),0);
 }
 
 function showChooser(){
@@ -254,23 +267,26 @@ $('date').value=today();
 $('paymentForm').addEventListener('submit',function(e){
   e.preventDefault();
   if(!company){showChooser();return}
-  const amount=Number($('amount').value),party=$('party').value.trim();
+  const amount=Number($('amount').value),party=$('party').value.trim(),isoDate=parseDate($('date').value);
+  if(!isoDate){$('formMessage').className='msg';$('formMessage').textContent='Date DD-MM-YYYY format mein daalein, jaise 1.10.26 ya 01-10-2026.';$('date').focus();return}
   if(!party||!Number.isFinite(amount)||amount<=0){
     $('formMessage').className='msg';
     $('formMessage').textContent='Enter a paid-to account and an amount greater than zero.';
     return;
   }
   const count=rows.filter(r=>r.type==='PAYMENT').length+1;
-  const row={id:'pay_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),voucherNo:'PV-'+String(count).padStart(5,'0'),type:'PAYMENT',date:$('date').value,amount:amount,method:$('method').value,party:party,ref:$('ref').value.trim(),note:$('note').value.trim(),createdAt:new Date().toISOString()};
+  const row={id:'pay_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),voucherNo:'PV-'+String(count).padStart(5,'0'),type:'PAYMENT',date:isoDate,amount:amount,method:$('method').value,party:party,ref:$('ref').value.trim(),note:$('note').value.trim(),createdAt:new Date().toISOString()};
   rows.push(row);
   try{
     saveRows();
     this.reset();
-    $('date').value=today();
+    $('date').value=displayDate(today());
+    $('paymentRegister').hidden=true;
     $('formMessage').className='msg ok';
     $('formMessage').textContent='Payment saved successfully · '+row.voucherNo;
     render();
     updatePartyBalance();
+    setTimeout(()=>$('date').focus(),0);
   }catch(err){
     rows.pop();
     $('formMessage').className='msg';
